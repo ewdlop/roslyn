@@ -91,6 +91,16 @@ namespace Microsoft.CodeAnalysis
         /// Type is an extension container.
         /// </summary>
         Extension = 14,
+
+        /// <summary>
+        /// Type is a union type (A | B | C).
+        /// </summary>
+        Union = 15,
+
+        /// <summary>
+        /// Type is a tagged union type.
+        /// </summary>
+        TaggedUnion = 16,
     }
 
     internal static class TypeKindInternal

@@ -10,6 +10,7 @@ class TestUnionParsing
     {
         TestTaggedUnions();
         TestUnionTypes();
+        TestUnionTypeSemantics();
     }
     
     static void TestTaggedUnions()
@@ -126,6 +127,90 @@ public class Test
         catch (Exception ex)
         {
             Console.WriteLine($"Parse failed: {ex.Message}");
+        }
+    }
+
+    static void TestUnionTypeSemantics()
+    {
+        // Test semantic model binding for union types
+        string unionTypeCode = @"
+public class Test 
+{
+    public (string | int) unionField;
+    
+    public void Method()
+    {
+        (bool | double) localUnion;
+    }
+}";
+
+        Console.WriteLine("\n=== Testing Union Type Semantics ===");
+        
+        try
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(unionTypeCode);
+            var compilation = CSharpCompilation.Create("TestAssembly")
+                .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
+                .AddSyntaxTrees(syntaxTree);
+            
+            var semanticModel = compilation.GetSemanticModel(syntaxTree);
+            var root = syntaxTree.GetRoot();
+            
+            Console.WriteLine("Semantic model created!");
+            
+            // Find union type syntax nodes
+            var unionTypes = root.DescendantNodes().OfType<UnionTypeSyntax>().ToList();
+            Console.WriteLine($"Found {unionTypes.Count} union types for semantic analysis");
+            
+            foreach (var unionTypeSyntax in unionTypes)
+            {
+                Console.WriteLine($"\nAnalyzing union type: {unionTypeSyntax}");
+                
+                try
+                {
+                    // Get the type symbol for this union type
+                    var typeInfo = semanticModel.GetTypeInfo(unionTypeSyntax);
+                    var symbolInfo = semanticModel.GetSymbolInfo(unionTypeSyntax);
+                    
+                    Console.WriteLine($"  Type: {typeInfo.Type?.ToDisplayString() ?? "null"}");
+                    Console.WriteLine($"  TypeKind: {typeInfo.Type?.TypeKind.ToString() ?? "null"}");
+                    Console.WriteLine($"  Symbol: {symbolInfo.Symbol?.ToDisplayString() ?? "null"}");
+                    
+                    if (typeInfo.Type != null)
+                    {
+                        Console.WriteLine($"  IsReferenceType: {typeInfo.Type.IsReferenceType}");
+                        Console.WriteLine($"  IsValueType: {typeInfo.Type.IsValueType}");
+                        Console.WriteLine($"  Kind: {typeInfo.Type.Kind}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"  Error analyzing semantic info: {ex.Message}");
+                }
+            }
+            
+            // Check compilation diagnostics
+            var compilationDiagnostics = compilation.GetDiagnostics();
+            if (compilationDiagnostics.Any())
+            {
+                Console.WriteLine("\nCompilation Diagnostics:");
+                foreach (var diagnostic in compilationDiagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning))
+                {
+                    Console.WriteLine($"  {diagnostic.Severity}: {diagnostic.GetMessage()}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\nNo compilation errors!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Semantic analysis failed: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
         }
     }
 } 

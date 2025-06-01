@@ -483,6 +483,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                         return TypeWithAnnotations.Create(AreNullableAnnotationsEnabled(tupleTypeSyntax.CloseParenToken), BindTupleType(tupleTypeSyntax, diagnostics, basesBeingResolved));
                     }
 
+                case SyntaxKind.UnionType:
+                    {
+                        var unionTypeSyntax = (UnionTypeSyntax)syntax;
+                        return TypeWithAnnotations.Create(AreNullableAnnotationsEnabled(unionTypeSyntax.CloseParenToken), BindUnionType(unionTypeSyntax, diagnostics, basesBeingResolved));
+                    }
+
                 case SyntaxKind.RefType:
                     {
                         // ref needs to be handled by the caller
@@ -2780,6 +2786,32 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return false;
             }
             return true;
+        }
+
+        private TypeSymbol BindUnionType(UnionTypeSyntax syntax, BindingDiagnosticBag diagnostics, ConsList<TypeSymbol> basesBeingResolved)
+        {
+            // TODO: Add feature check for union types when the feature is ready
+            // MessageID.IDS_FeatureUnionTypes.CheckFeatureAvailability(diagnostics, syntax);
+
+            int numTypes = syntax.Types.Count;
+            var types = ArrayBuilder<TypeWithAnnotations>.GetInstance(numTypes);
+
+            for (int i = 0; i < numTypes; i++)
+            {
+                var typeSyntax = syntax.Types[i];
+                var typeWithAnnotations = BindType(typeSyntax, diagnostics, basesBeingResolved);
+                types.Add(typeWithAnnotations);
+            }
+
+            var typesArray = types.ToImmutableAndFree();
+
+            if (typesArray.Length < 2)
+            {
+                throw ExceptionUtilities.UnexpectedValue(typesArray.Length);
+            }
+
+            // Create the union type symbol
+            return UnionTypeSymbol.CreateNormalized(typesArray, isNullable: false);
         }
     }
 }

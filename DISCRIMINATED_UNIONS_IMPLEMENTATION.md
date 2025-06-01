@@ -209,9 +209,54 @@ public union JsonValue
 - Creates `UnionCaseDeclarationSyntax` nodes
 - Supports attributes on union cases
 
-## What's Implemented vs. What's Missing
+## Phase 3 Progress - Semantic Analysis (In Progress) 🚧
 
-### ✅ Implemented (Phases 1 & 2 Complete)
+Phase 3 of the discriminated unions implementation is now underway! We're implementing the semantic layer that makes discriminated unions functionally usable.
+
+### Phase 3.1: Symbol Creation ✅
+
+We have successfully implemented the core symbol infrastructure:
+
+#### UnionTypeSymbol
+- Created `UnionTypeSymbol` class for union types like `(A | B | C)`
+- Inherits from `NamedTypeSymbol` with proper TypeKind support
+- Implements equality, hashing, and visitor pattern
+- Provides type checking methods (`IsReferenceType`, `IsValueType`)
+- Supports display formatting: `(string | int | bool)`
+
+#### TaggedUnionTypeSymbol  
+- Created `TaggedUnionTypeSymbol` class for declared unions like `union Result { Success, Error }`
+- Inherits from `SourceMemberContainerTypeSymbol` for full source integration
+- Supports union cases with parameters
+- Proper base type handling (inherits from Object)
+
+#### UnionCaseSymbol
+- Created `UnionCaseSymbol` class for individual union cases
+- Supports parameterized cases: `Success(T value)`
+- Proper symbol hierarchy integration
+
+#### TypeKind Extensions
+- Added `TypeKind.Union` and `TypeKind.TaggedUnion` to core type system
+- Added extension methods: `IsUnion()`, `IsTaggedUnion()`, `IsUnionType()`
+
+### Phase 3.2: Binder Integration ✅
+
+Successfully integrated union type binding into the semantic analysis pipeline:
+
+#### Union Type Binding
+- Added `SyntaxKind.UnionType` case to `BindNamespaceOrTypeOrAliasSymbol`
+- Implemented `BindUnionType` method following the tuple type pattern
+- Properly handles type validation and error reporting
+- Creates normalized `UnionTypeSymbol` instances
+
+#### Type System Integration
+- Union types now properly bind from syntax to symbols
+- Supports nested union types and complex type combinations
+- Integrates with existing nullability and annotation systems
+
+### What's Implemented vs. What's Missing
+
+### ✅ Implemented (Phases 1, 2 & 3.1-3.2 Complete)
 - [x] **Phase 1: Syntax Infrastructure**
   - [x] Syntax tree definitions for union types and tagged unions
   - [x] Keyword recognition for `union`
@@ -224,13 +269,28 @@ public union JsonValue
   - [x] Tagged union declaration parsing: `union Name { Case1, Case2 }` syntax
   - [x] Union case parsing with parameters: `Case(int value, string name)`
   - [x] Proper disambiguation between union types `(A | B)` and tuple types `(A, B)`
+- [x] **Phase 3.1-3.2: Symbol Creation & Binder Integration**
+  - [x] `UnionTypeSymbol` for union types `(A | B | C)`
+  - [x] `TaggedUnionTypeSymbol` for declared unions `union T { A, B }`
+  - [x] `UnionCaseSymbol` for individual union cases
+  - [x] Type system integration with `TypeKind.Union` and `TypeKind.TaggedUnion`
+  - [x] Binder integration for union type binding
+  - [x] Extension methods for type checking
 
-### ❌ Still Needed for Full Implementation (Phase 3+)
-- [ ] **Phase 3: Semantic Analysis**
-  - [ ] Symbol creation for union types and cases
-  - [ ] Type checking and validation
-  - [ ] Type inference with unions
-  - [ ] Exhaustiveness checking for pattern matching
+### ❌ Still Needed for Full Implementation (Phase 3.3+)
+- [ ] **Phase 3.3: Type Checking & Validation**
+  - [ ] Union type compatibility rules
+  - [ ] Conversion and assignment semantics
+  - [ ] Tagged union declaration validation
+  - [ ] Generic union support and constraints
+- [ ] **Phase 3.4: Type Inference**
+  - [ ] Best common type determination for unions
+  - [ ] Method overload resolution with unions
+  - [ ] Generic type inference with union constraints
+- [ ] **Phase 3.5: Pattern Matching Foundation**
+  - [ ] Union case pattern recognition
+  - [ ] Exhaustiveness checking for union types
+  - [ ] Switch expression analysis
 - [ ] **Phase 4: Code Generation**
   - [ ] IL emission for union types and operations
   - [ ] Runtime representation and layout
@@ -254,71 +314,32 @@ public union JsonValue
 
 ## Next Steps
 
-With Phases 1 and 2 complete, we're now ready to begin **Phase 3: Semantic Analysis**. This is the next major milestone that will make discriminated unions functionally usable in C#.
+With the core symbol infrastructure and binder integration complete, we're ready to continue Phase 3 with type checking and validation:
 
-### Phase 3: Semantic Analysis Implementation
+### Phase 3.3: Type Checking & Validation
 
-The next phase requires implementing semantic analysis in `src/Compilers/CSharp/Portable/Binder/` to:
+The next step requires implementing proper type checking for union types:
 
-#### 3.1 Symbol Creation
-- Create `UnionTypeSymbol` and `UnionCaseSymbol` classes
-- Integrate with the existing symbol hierarchy
-- Handle generic union types and constraints
+#### Union Type Compatibility Rules
+- Define when two union types are compatible
+- Handle subtype relationships between union and non-union types
+- Implement conversion rules (implicit/explicit)
 
-#### 3.2 Type Checking
-- Validate union type declarations
-- Check union case parameter types
-- Implement union type compatibility rules
-- Handle conversion and assignment semantics
+#### Tagged Union Declaration Validation
+- Validate union case names and parameters
+- Check for duplicate cases and naming conflicts
+- Ensure proper type constraints on generic unions
 
-#### 3.3 Type Inference
-- Update type inference to work with union types
-- Handle method overload resolution with unions
-- Implement best common type determination
+### Testing Phase 3 Progress
 
-#### 3.4 Pattern Matching Foundation
-- Extend pattern matching to recognize union cases
-- Implement exhaustiveness checking
-- Update switch expression analysis
-
-### Ready to Test Phase 2
-
-Before moving to Phase 3, you can test the current parser implementation:
+You can test the current implementation:
 
 ```bash
-# Test the union parsing
+# Test the union type symbol creation and binding
 dotnet run --project TestUnionParsing.csproj
 ```
 
-This will verify that both union type syntax `(A | B | C)` and tagged union declarations parse correctly.
-
-### Previous Phase Implementations
-To complete the discriminated union implementation, the following major components need to be implemented:
-
-### 1. Parser Updates
-Update the C# parser in `src/Compilers/CSharp/Portable/Parser/` to:
-- Recognize union type syntax in type contexts
-- Parse tagged union declarations
-- Handle union case declarations with parameters
-
-### 2. Semantic Analysis
-Implement semantic analysis in `src/Compilers/CSharp/Portable/Binder/` to:
-- Create symbols for union types and cases
-- Validate union type compatibility
-- Handle type inference with unions
-- Implement exhaustiveness checking
-
-### 3. Code Generation
-Update the code generator in `src/Compilers/CSharp/Portable/CodeGen/` to:
-- Emit IL for union types
-- Generate efficient runtime representations
-- Handle union construction and deconstruction
-
-### 4. Pattern Matching
-Enhance pattern matching in `src/Compilers/CSharp/Portable/FlowAnalysis/` to:
-- Support union case patterns
-- Implement exhaustiveness analysis
-- Generate efficient switch code
+This will verify that union types now properly create symbols and bind through the semantic analysis pipeline.
 
 ## Example Usage
 

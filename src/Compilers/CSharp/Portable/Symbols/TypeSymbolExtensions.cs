@@ -375,6 +375,24 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return type.TypeKind == TypeKind.Array && ((ArrayTypeSymbol)type).IsSZArray;
         }
 
+        public static bool IsUnion(this TypeSymbol type)
+        {
+            RoslynDebug.Assert((object)type != null);
+            return type.TypeKind == TypeKind.Union;
+        }
+
+        public static bool IsTaggedUnion(this TypeSymbol type)
+        {
+            RoslynDebug.Assert((object)type != null);
+            return type.TypeKind == TypeKind.TaggedUnion;
+        }
+
+        public static bool IsUnionType(this TypeSymbol type)
+        {
+            RoslynDebug.Assert((object)type != null);
+            return type.TypeKind == TypeKind.Union || type.TypeKind == TypeKind.TaggedUnion;
+        }
+
         internal static bool IsArrayInterface(this TypeSymbol type, out TypeWithAnnotations typeArgument)
         {
             if (type is NamedTypeSymbol
