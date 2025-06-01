@@ -61,6 +61,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         private static Syntax.InternalSyntax.TupleElementSyntax GenerateTupleElement()
             => InternalSyntaxFactory.TupleElement(GenerateIdentifierName(), null);
 
+        private static Syntax.InternalSyntax.UnionTypeSyntax GenerateUnionType()
+            => InternalSyntaxFactory.UnionType(InternalSyntaxFactory.Token(SyntaxKind.OpenParenToken), new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<Syntax.InternalSyntax.TypeSyntax>(), InternalSyntaxFactory.Token(SyntaxKind.CloseParenToken));
+
         private static Syntax.InternalSyntax.OmittedTypeArgumentSyntax GenerateOmittedTypeArgument()
             => InternalSyntaxFactory.OmittedTypeArgument(InternalSyntaxFactory.Token(SyntaxKind.OmittedTypeArgumentToken));
 
@@ -747,6 +750,12 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
         private static Syntax.InternalSyntax.NullableDirectiveTriviaSyntax GenerateNullableDirectiveTrivia()
             => InternalSyntaxFactory.NullableDirectiveTrivia(InternalSyntaxFactory.Token(SyntaxKind.HashToken), InternalSyntaxFactory.Token(SyntaxKind.NullableKeyword), InternalSyntaxFactory.Token(SyntaxKind.EnableKeyword), null, InternalSyntaxFactory.Token(SyntaxKind.EndOfDirectiveToken), new bool());
+
+        private static Syntax.InternalSyntax.TaggedUnionDeclarationSyntax GenerateTaggedUnionDeclaration()
+            => InternalSyntaxFactory.TaggedUnionDeclaration(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<Syntax.InternalSyntax.AttributeListSyntax>(), new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<Syntax.InternalSyntax.SyntaxToken>(), InternalSyntaxFactory.Token(SyntaxKind.UnionKeyword), InternalSyntaxFactory.Identifier("Identifier"), null, null, null, new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<Syntax.InternalSyntax.UnionCaseDeclarationSyntax>(), null, null);
+
+        private static Syntax.InternalSyntax.UnionCaseDeclarationSyntax GenerateUnionCaseDeclaration()
+            => InternalSyntaxFactory.UnionCaseDeclaration(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<Syntax.InternalSyntax.AttributeListSyntax>(), new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<Syntax.InternalSyntax.SyntaxToken>(), InternalSyntaxFactory.Identifier("Identifier"), null);
         #endregion Green Generators
 
         #region Green Factory and Property Tests
@@ -939,6 +948,18 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             Assert.NotNull(node.Type);
             Assert.Null(node.Identifier);
+
+            AttachAndCheckDiagnostics(node);
+        }
+
+        [Fact]
+        public void TestUnionTypeFactoryAndProperties()
+        {
+            var node = GenerateUnionType();
+
+            Assert.Equal(SyntaxKind.OpenParenToken, node.OpenParenToken.Kind);
+            Assert.Equal(default, node.Types);
+            Assert.Equal(SyntaxKind.CloseParenToken, node.CloseParenToken.Kind);
 
             AttachAndCheckDiagnostics(node);
         }
@@ -3913,6 +3934,38 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             AttachAndCheckDiagnostics(node);
         }
+
+        [Fact]
+        public void TestTaggedUnionDeclarationFactoryAndProperties()
+        {
+            var node = GenerateTaggedUnionDeclaration();
+
+            Assert.Equal(default, node.AttributeLists);
+            Assert.Equal(default, node.Modifiers);
+            Assert.Equal(SyntaxKind.UnionKeyword, node.UnionKeyword.Kind);
+            Assert.Equal(SyntaxKind.IdentifierToken, node.Identifier.Kind);
+            Assert.Null(node.TypeParameterList);
+            Assert.Null(node.BaseList);
+            Assert.Null(node.OpenBraceToken);
+            Assert.Equal(default, node.Members);
+            Assert.Null(node.CloseBraceToken);
+            Assert.Null(node.SemicolonToken);
+
+            AttachAndCheckDiagnostics(node);
+        }
+
+        [Fact]
+        public void TestUnionCaseDeclarationFactoryAndProperties()
+        {
+            var node = GenerateUnionCaseDeclaration();
+
+            Assert.Equal(default, node.AttributeLists);
+            Assert.Equal(default, node.Modifiers);
+            Assert.Equal(SyntaxKind.IdentifierToken, node.Identifier.Kind);
+            Assert.Null(node.ParameterList);
+
+            AttachAndCheckDiagnostics(node);
+        }
         #endregion Green Factory and Property Tests
 
         #region Green Rewriters
@@ -4352,6 +4405,32 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         public void TestTupleElementIdentityRewriter()
         {
             var oldNode = GenerateTupleElement();
+            var rewriter = new IdentityRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            Assert.Same(oldNode, newNode);
+        }
+
+        [Fact]
+        public void TestUnionTypeTokenDeleteRewriter()
+        {
+            var oldNode = GenerateUnionType();
+            var rewriter = new TokenDeleteRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            if(!oldNode.IsMissing)
+            {
+                Assert.NotEqual(oldNode, newNode);
+            }
+
+            Assert.NotNull(newNode);
+            Assert.True(newNode.IsMissing, "No tokens => missing");
+        }
+
+        [Fact]
+        public void TestUnionTypeIdentityRewriter()
+        {
+            var oldNode = GenerateUnionType();
             var rewriter = new IdentityRewriter();
             var newNode = rewriter.Visit(oldNode);
 
@@ -10311,6 +10390,58 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             Assert.Same(oldNode, newNode);
         }
+
+        [Fact]
+        public void TestTaggedUnionDeclarationTokenDeleteRewriter()
+        {
+            var oldNode = GenerateTaggedUnionDeclaration();
+            var rewriter = new TokenDeleteRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            if(!oldNode.IsMissing)
+            {
+                Assert.NotEqual(oldNode, newNode);
+            }
+
+            Assert.NotNull(newNode);
+            Assert.True(newNode.IsMissing, "No tokens => missing");
+        }
+
+        [Fact]
+        public void TestTaggedUnionDeclarationIdentityRewriter()
+        {
+            var oldNode = GenerateTaggedUnionDeclaration();
+            var rewriter = new IdentityRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            Assert.Same(oldNode, newNode);
+        }
+
+        [Fact]
+        public void TestUnionCaseDeclarationTokenDeleteRewriter()
+        {
+            var oldNode = GenerateUnionCaseDeclaration();
+            var rewriter = new TokenDeleteRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            if(!oldNode.IsMissing)
+            {
+                Assert.NotEqual(oldNode, newNode);
+            }
+
+            Assert.NotNull(newNode);
+            Assert.True(newNode.IsMissing, "No tokens => missing");
+        }
+
+        [Fact]
+        public void TestUnionCaseDeclarationIdentityRewriter()
+        {
+            var oldNode = GenerateUnionCaseDeclaration();
+            var rewriter = new IdentityRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            Assert.Same(oldNode, newNode);
+        }
         #endregion Green Rewriters
     }
 
@@ -10367,6 +10498,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
         private static TupleElementSyntax GenerateTupleElement()
             => SyntaxFactory.TupleElement(GenerateIdentifierName(), default(SyntaxToken));
+
+        private static UnionTypeSyntax GenerateUnionType()
+            => SyntaxFactory.UnionType(SyntaxFactory.Token(SyntaxKind.OpenParenToken), new SeparatedSyntaxList<TypeSyntax>(), SyntaxFactory.Token(SyntaxKind.CloseParenToken));
 
         private static OmittedTypeArgumentSyntax GenerateOmittedTypeArgument()
             => SyntaxFactory.OmittedTypeArgument(SyntaxFactory.Token(SyntaxKind.OmittedTypeArgumentToken));
@@ -11054,6 +11188,12 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
         private static NullableDirectiveTriviaSyntax GenerateNullableDirectiveTrivia()
             => SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.HashToken), SyntaxFactory.Token(SyntaxKind.NullableKeyword), SyntaxFactory.Token(SyntaxKind.EnableKeyword), default(SyntaxToken), SyntaxFactory.Token(SyntaxKind.EndOfDirectiveToken), new bool());
+
+        private static TaggedUnionDeclarationSyntax GenerateTaggedUnionDeclaration()
+            => SyntaxFactory.TaggedUnionDeclaration(new SyntaxList<AttributeListSyntax>(), new SyntaxTokenList(), SyntaxFactory.Token(SyntaxKind.UnionKeyword), SyntaxFactory.Identifier("Identifier"), default(TypeParameterListSyntax), default(BaseListSyntax), default(SyntaxToken), new SeparatedSyntaxList<UnionCaseDeclarationSyntax>(), default(SyntaxToken), default(SyntaxToken));
+
+        private static UnionCaseDeclarationSyntax GenerateUnionCaseDeclaration()
+            => SyntaxFactory.UnionCaseDeclaration(new SyntaxList<AttributeListSyntax>(), new SyntaxTokenList(), SyntaxFactory.Identifier("Identifier"), default(ParameterListSyntax));
         #endregion Red Generators
 
         #region Red Factory and Property Tests
@@ -11247,6 +11387,18 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             Assert.NotNull(node.Type);
             Assert.Equal(SyntaxKind.None, node.Identifier.Kind());
             var newNode = node.WithType(node.Type).WithIdentifier(node.Identifier);
+            Assert.Equal(node, newNode);
+        }
+
+        [Fact]
+        public void TestUnionTypeFactoryAndProperties()
+        {
+            var node = GenerateUnionType();
+
+            Assert.Equal(SyntaxKind.OpenParenToken, node.OpenParenToken.Kind());
+            Assert.Equal(default, node.Types);
+            Assert.Equal(SyntaxKind.CloseParenToken, node.CloseParenToken.Kind());
+            var newNode = node.WithOpenParenToken(node.OpenParenToken).WithTypes(node.Types).WithCloseParenToken(node.CloseParenToken);
             Assert.Equal(node, newNode);
         }
 
@@ -14220,6 +14372,38 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var newNode = node.WithHashToken(node.HashToken).WithNullableKeyword(node.NullableKeyword).WithSettingToken(node.SettingToken).WithTargetToken(node.TargetToken).WithEndOfDirectiveToken(node.EndOfDirectiveToken).WithIsActive(node.IsActive);
             Assert.Equal(node, newNode);
         }
+
+        [Fact]
+        public void TestTaggedUnionDeclarationFactoryAndProperties()
+        {
+            var node = GenerateTaggedUnionDeclaration();
+
+            Assert.Equal(default, node.AttributeLists);
+            Assert.Equal(default, node.Modifiers);
+            Assert.Equal(SyntaxKind.UnionKeyword, node.UnionKeyword.Kind());
+            Assert.Equal(SyntaxKind.IdentifierToken, node.Identifier.Kind());
+            Assert.Null(node.TypeParameterList);
+            Assert.Null(node.BaseList);
+            Assert.Equal(SyntaxKind.None, node.OpenBraceToken.Kind());
+            Assert.Equal(default, node.Members);
+            Assert.Equal(SyntaxKind.None, node.CloseBraceToken.Kind());
+            Assert.Equal(SyntaxKind.None, node.SemicolonToken.Kind());
+            var newNode = node.WithAttributeLists(node.AttributeLists).WithModifiers(node.Modifiers).WithUnionKeyword(node.UnionKeyword).WithIdentifier(node.Identifier).WithTypeParameterList(node.TypeParameterList).WithBaseList(node.BaseList).WithOpenBraceToken(node.OpenBraceToken).WithMembers(node.Members).WithCloseBraceToken(node.CloseBraceToken).WithSemicolonToken(node.SemicolonToken);
+            Assert.Equal(node, newNode);
+        }
+
+        [Fact]
+        public void TestUnionCaseDeclarationFactoryAndProperties()
+        {
+            var node = GenerateUnionCaseDeclaration();
+
+            Assert.Equal(default, node.AttributeLists);
+            Assert.Equal(default, node.Modifiers);
+            Assert.Equal(SyntaxKind.IdentifierToken, node.Identifier.Kind());
+            Assert.Null(node.ParameterList);
+            var newNode = node.WithAttributeLists(node.AttributeLists).WithModifiers(node.Modifiers).WithIdentifier(node.Identifier).WithParameterList(node.ParameterList);
+            Assert.Equal(node, newNode);
+        }
         #endregion Red Factory and Property Tests
 
         #region Red Rewriters
@@ -14659,6 +14843,32 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         public void TestTupleElementIdentityRewriter()
         {
             var oldNode = GenerateTupleElement();
+            var rewriter = new IdentityRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            Assert.Same(oldNode, newNode);
+        }
+
+        [Fact]
+        public void TestUnionTypeTokenDeleteRewriter()
+        {
+            var oldNode = GenerateUnionType();
+            var rewriter = new TokenDeleteRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            if(!oldNode.IsMissing)
+            {
+                Assert.NotEqual(oldNode, newNode);
+            }
+
+            Assert.NotNull(newNode);
+            Assert.True(newNode.IsMissing, "No tokens => missing");
+        }
+
+        [Fact]
+        public void TestUnionTypeIdentityRewriter()
+        {
+            var oldNode = GenerateUnionType();
             var rewriter = new IdentityRewriter();
             var newNode = rewriter.Visit(oldNode);
 
@@ -20613,6 +20823,58 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         public void TestNullableDirectiveTriviaIdentityRewriter()
         {
             var oldNode = GenerateNullableDirectiveTrivia();
+            var rewriter = new IdentityRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            Assert.Same(oldNode, newNode);
+        }
+
+        [Fact]
+        public void TestTaggedUnionDeclarationTokenDeleteRewriter()
+        {
+            var oldNode = GenerateTaggedUnionDeclaration();
+            var rewriter = new TokenDeleteRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            if(!oldNode.IsMissing)
+            {
+                Assert.NotEqual(oldNode, newNode);
+            }
+
+            Assert.NotNull(newNode);
+            Assert.True(newNode.IsMissing, "No tokens => missing");
+        }
+
+        [Fact]
+        public void TestTaggedUnionDeclarationIdentityRewriter()
+        {
+            var oldNode = GenerateTaggedUnionDeclaration();
+            var rewriter = new IdentityRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            Assert.Same(oldNode, newNode);
+        }
+
+        [Fact]
+        public void TestUnionCaseDeclarationTokenDeleteRewriter()
+        {
+            var oldNode = GenerateUnionCaseDeclaration();
+            var rewriter = new TokenDeleteRewriter();
+            var newNode = rewriter.Visit(oldNode);
+
+            if(!oldNode.IsMissing)
+            {
+                Assert.NotEqual(oldNode, newNode);
+            }
+
+            Assert.NotNull(newNode);
+            Assert.True(newNode.IsMissing, "No tokens => missing");
+        }
+
+        [Fact]
+        public void TestUnionCaseDeclarationIdentityRewriter()
+        {
+            var oldNode = GenerateUnionCaseDeclaration();
             var rewriter = new IdentityRewriter();
             var newNode = rewriter.Visit(oldNode);
 

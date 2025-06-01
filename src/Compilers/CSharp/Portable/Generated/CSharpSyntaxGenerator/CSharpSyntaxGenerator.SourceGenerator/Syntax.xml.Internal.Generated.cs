@@ -1522,6 +1522,104 @@ internal sealed partial class TupleElementSyntax : CSharpSyntaxNode
         => new TupleElementSyntax(this.Kind, this.type, this.identifier, GetDiagnostics(), annotations);
 }
 
+/// <summary>Class which represents the syntax node for union type (A | B).</summary>
+internal sealed partial class UnionTypeSyntax : TypeSyntax
+{
+    internal readonly SyntaxToken openParenToken;
+    internal readonly GreenNode? types;
+    internal readonly SyntaxToken closeParenToken;
+
+    internal UnionTypeSyntax(SyntaxKind kind, SyntaxToken openParenToken, GreenNode? types, SyntaxToken closeParenToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+      : base(kind, diagnostics, annotations)
+    {
+        this.SlotCount = 3;
+        this.AdjustFlagsAndWidth(openParenToken);
+        this.openParenToken = openParenToken;
+        if (types != null)
+        {
+            this.AdjustFlagsAndWidth(types);
+            this.types = types;
+        }
+        this.AdjustFlagsAndWidth(closeParenToken);
+        this.closeParenToken = closeParenToken;
+    }
+
+    internal UnionTypeSyntax(SyntaxKind kind, SyntaxToken openParenToken, GreenNode? types, SyntaxToken closeParenToken, SyntaxFactoryContext context)
+      : base(kind)
+    {
+        this.SetFactoryContext(context);
+        this.SlotCount = 3;
+        this.AdjustFlagsAndWidth(openParenToken);
+        this.openParenToken = openParenToken;
+        if (types != null)
+        {
+            this.AdjustFlagsAndWidth(types);
+            this.types = types;
+        }
+        this.AdjustFlagsAndWidth(closeParenToken);
+        this.closeParenToken = closeParenToken;
+    }
+
+    internal UnionTypeSyntax(SyntaxKind kind, SyntaxToken openParenToken, GreenNode? types, SyntaxToken closeParenToken)
+      : base(kind)
+    {
+        this.SlotCount = 3;
+        this.AdjustFlagsAndWidth(openParenToken);
+        this.openParenToken = openParenToken;
+        if (types != null)
+        {
+            this.AdjustFlagsAndWidth(types);
+            this.types = types;
+        }
+        this.AdjustFlagsAndWidth(closeParenToken);
+        this.closeParenToken = closeParenToken;
+    }
+
+    /// <summary>SyntaxToken representing the open parenthesis.</summary>
+    public SyntaxToken OpenParenToken => this.openParenToken;
+    /// <summary>SeparatedSyntaxList of TypeSyntax nodes representing the union types.</summary>
+    public CoreSyntax.SeparatedSyntaxList<TypeSyntax> Types => new CoreSyntax.SeparatedSyntaxList<TypeSyntax>(new CoreSyntax.SyntaxList<CSharpSyntaxNode>(this.types));
+    /// <summary>SyntaxToken representing the close parenthesis.</summary>
+    public SyntaxToken CloseParenToken => this.closeParenToken;
+
+    internal override GreenNode? GetSlot(int index)
+        => index switch
+        {
+            0 => this.openParenToken,
+            1 => this.types,
+            2 => this.closeParenToken,
+            _ => null,
+        };
+
+    internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new CSharp.Syntax.UnionTypeSyntax(this, parent, position);
+
+    public override void Accept(CSharpSyntaxVisitor visitor) => visitor.VisitUnionType(this);
+    public override TResult Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) => visitor.VisitUnionType(this);
+
+    public UnionTypeSyntax Update(SyntaxToken openParenToken, CoreSyntax.SeparatedSyntaxList<TypeSyntax> types, SyntaxToken closeParenToken)
+    {
+        if (openParenToken != this.OpenParenToken || types != this.Types || closeParenToken != this.CloseParenToken)
+        {
+            var newNode = SyntaxFactory.UnionType(openParenToken, types, closeParenToken);
+            var diags = GetDiagnostics();
+            if (diags?.Length > 0)
+                newNode = newNode.WithDiagnosticsGreen(diags);
+            var annotations = GetAnnotations();
+            if (annotations?.Length > 0)
+                newNode = newNode.WithAnnotationsGreen(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+        => new UnionTypeSyntax(this.Kind, this.openParenToken, this.types, this.closeParenToken, diagnostics, GetAnnotations());
+
+    internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+        => new UnionTypeSyntax(this.Kind, this.openParenToken, this.types, this.closeParenToken, GetDiagnostics(), annotations);
+}
+
 /// <summary>Class which represents a placeholder in the type argument list of an unbound generic type.</summary>
 internal sealed partial class OmittedTypeArgumentSyntax : TypeSyntax
 {
@@ -26829,6 +26927,353 @@ internal sealed partial class NullableDirectiveTriviaSyntax : DirectiveTriviaSyn
         => new NullableDirectiveTriviaSyntax(this.Kind, this.hashToken, this.nullableKeyword, this.settingToken, this.targetToken, this.endOfDirectiveToken, this.isActive, GetDiagnostics(), annotations);
 }
 
+/// <summary>Tagged union type declaration syntax.</summary>
+internal sealed partial class TaggedUnionDeclarationSyntax : BaseTypeDeclarationSyntax
+{
+    internal readonly GreenNode? attributeLists;
+    internal readonly GreenNode? modifiers;
+    internal readonly SyntaxToken unionKeyword;
+    internal readonly SyntaxToken identifier;
+    internal readonly TypeParameterListSyntax? typeParameterList;
+    internal readonly BaseListSyntax? baseList;
+    internal readonly SyntaxToken? openBraceToken;
+    internal readonly GreenNode? members;
+    internal readonly SyntaxToken? closeBraceToken;
+    internal readonly SyntaxToken? semicolonToken;
+
+    internal TaggedUnionDeclarationSyntax(SyntaxKind kind, GreenNode? attributeLists, GreenNode? modifiers, SyntaxToken unionKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, BaseListSyntax? baseList, SyntaxToken? openBraceToken, GreenNode? members, SyntaxToken? closeBraceToken, SyntaxToken? semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+      : base(kind, diagnostics, annotations)
+    {
+        this.SlotCount = 10;
+        if (attributeLists != null)
+        {
+            this.AdjustFlagsAndWidth(attributeLists);
+            this.attributeLists = attributeLists;
+        }
+        if (modifiers != null)
+        {
+            this.AdjustFlagsAndWidth(modifiers);
+            this.modifiers = modifiers;
+        }
+        this.AdjustFlagsAndWidth(unionKeyword);
+        this.unionKeyword = unionKeyword;
+        this.AdjustFlagsAndWidth(identifier);
+        this.identifier = identifier;
+        if (typeParameterList != null)
+        {
+            this.AdjustFlagsAndWidth(typeParameterList);
+            this.typeParameterList = typeParameterList;
+        }
+        if (baseList != null)
+        {
+            this.AdjustFlagsAndWidth(baseList);
+            this.baseList = baseList;
+        }
+        if (openBraceToken != null)
+        {
+            this.AdjustFlagsAndWidth(openBraceToken);
+            this.openBraceToken = openBraceToken;
+        }
+        if (members != null)
+        {
+            this.AdjustFlagsAndWidth(members);
+            this.members = members;
+        }
+        if (closeBraceToken != null)
+        {
+            this.AdjustFlagsAndWidth(closeBraceToken);
+            this.closeBraceToken = closeBraceToken;
+        }
+        if (semicolonToken != null)
+        {
+            this.AdjustFlagsAndWidth(semicolonToken);
+            this.semicolonToken = semicolonToken;
+        }
+    }
+
+    internal TaggedUnionDeclarationSyntax(SyntaxKind kind, GreenNode? attributeLists, GreenNode? modifiers, SyntaxToken unionKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, BaseListSyntax? baseList, SyntaxToken? openBraceToken, GreenNode? members, SyntaxToken? closeBraceToken, SyntaxToken? semicolonToken, SyntaxFactoryContext context)
+      : base(kind)
+    {
+        this.SetFactoryContext(context);
+        this.SlotCount = 10;
+        if (attributeLists != null)
+        {
+            this.AdjustFlagsAndWidth(attributeLists);
+            this.attributeLists = attributeLists;
+        }
+        if (modifiers != null)
+        {
+            this.AdjustFlagsAndWidth(modifiers);
+            this.modifiers = modifiers;
+        }
+        this.AdjustFlagsAndWidth(unionKeyword);
+        this.unionKeyword = unionKeyword;
+        this.AdjustFlagsAndWidth(identifier);
+        this.identifier = identifier;
+        if (typeParameterList != null)
+        {
+            this.AdjustFlagsAndWidth(typeParameterList);
+            this.typeParameterList = typeParameterList;
+        }
+        if (baseList != null)
+        {
+            this.AdjustFlagsAndWidth(baseList);
+            this.baseList = baseList;
+        }
+        if (openBraceToken != null)
+        {
+            this.AdjustFlagsAndWidth(openBraceToken);
+            this.openBraceToken = openBraceToken;
+        }
+        if (members != null)
+        {
+            this.AdjustFlagsAndWidth(members);
+            this.members = members;
+        }
+        if (closeBraceToken != null)
+        {
+            this.AdjustFlagsAndWidth(closeBraceToken);
+            this.closeBraceToken = closeBraceToken;
+        }
+        if (semicolonToken != null)
+        {
+            this.AdjustFlagsAndWidth(semicolonToken);
+            this.semicolonToken = semicolonToken;
+        }
+    }
+
+    internal TaggedUnionDeclarationSyntax(SyntaxKind kind, GreenNode? attributeLists, GreenNode? modifiers, SyntaxToken unionKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, BaseListSyntax? baseList, SyntaxToken? openBraceToken, GreenNode? members, SyntaxToken? closeBraceToken, SyntaxToken? semicolonToken)
+      : base(kind)
+    {
+        this.SlotCount = 10;
+        if (attributeLists != null)
+        {
+            this.AdjustFlagsAndWidth(attributeLists);
+            this.attributeLists = attributeLists;
+        }
+        if (modifiers != null)
+        {
+            this.AdjustFlagsAndWidth(modifiers);
+            this.modifiers = modifiers;
+        }
+        this.AdjustFlagsAndWidth(unionKeyword);
+        this.unionKeyword = unionKeyword;
+        this.AdjustFlagsAndWidth(identifier);
+        this.identifier = identifier;
+        if (typeParameterList != null)
+        {
+            this.AdjustFlagsAndWidth(typeParameterList);
+            this.typeParameterList = typeParameterList;
+        }
+        if (baseList != null)
+        {
+            this.AdjustFlagsAndWidth(baseList);
+            this.baseList = baseList;
+        }
+        if (openBraceToken != null)
+        {
+            this.AdjustFlagsAndWidth(openBraceToken);
+            this.openBraceToken = openBraceToken;
+        }
+        if (members != null)
+        {
+            this.AdjustFlagsAndWidth(members);
+            this.members = members;
+        }
+        if (closeBraceToken != null)
+        {
+            this.AdjustFlagsAndWidth(closeBraceToken);
+            this.closeBraceToken = closeBraceToken;
+        }
+        if (semicolonToken != null)
+        {
+            this.AdjustFlagsAndWidth(semicolonToken);
+            this.semicolonToken = semicolonToken;
+        }
+    }
+
+    public override CoreSyntax.SyntaxList<AttributeListSyntax> AttributeLists => new CoreSyntax.SyntaxList<AttributeListSyntax>(this.attributeLists);
+    public override CoreSyntax.SyntaxList<SyntaxToken> Modifiers => new CoreSyntax.SyntaxList<SyntaxToken>(this.modifiers);
+    /// <summary>Gets the union keyword token.</summary>
+    public SyntaxToken UnionKeyword => this.unionKeyword;
+    public override SyntaxToken Identifier => this.identifier;
+    public TypeParameterListSyntax? TypeParameterList => this.typeParameterList;
+    public override BaseListSyntax? BaseList => this.baseList;
+    public override SyntaxToken? OpenBraceToken => this.openBraceToken;
+    /// <summary>Gets the union case declaration list.</summary>
+    public CoreSyntax.SeparatedSyntaxList<UnionCaseDeclarationSyntax> Members => new CoreSyntax.SeparatedSyntaxList<UnionCaseDeclarationSyntax>(new CoreSyntax.SyntaxList<CSharpSyntaxNode>(this.members));
+    public override SyntaxToken? CloseBraceToken => this.closeBraceToken;
+    /// <summary>Gets the optional semicolon token.</summary>
+    public override SyntaxToken? SemicolonToken => this.semicolonToken;
+
+    internal override GreenNode? GetSlot(int index)
+        => index switch
+        {
+            0 => this.attributeLists,
+            1 => this.modifiers,
+            2 => this.unionKeyword,
+            3 => this.identifier,
+            4 => this.typeParameterList,
+            5 => this.baseList,
+            6 => this.openBraceToken,
+            7 => this.members,
+            8 => this.closeBraceToken,
+            9 => this.semicolonToken,
+            _ => null,
+        };
+
+    internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new CSharp.Syntax.TaggedUnionDeclarationSyntax(this, parent, position);
+
+    public override void Accept(CSharpSyntaxVisitor visitor) => visitor.VisitTaggedUnionDeclaration(this);
+    public override TResult Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) => visitor.VisitTaggedUnionDeclaration(this);
+
+    public TaggedUnionDeclarationSyntax Update(CoreSyntax.SyntaxList<AttributeListSyntax> attributeLists, CoreSyntax.SyntaxList<SyntaxToken> modifiers, SyntaxToken unionKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameterList, BaseListSyntax baseList, SyntaxToken openBraceToken, CoreSyntax.SeparatedSyntaxList<UnionCaseDeclarationSyntax> members, SyntaxToken closeBraceToken, SyntaxToken semicolonToken)
+    {
+        if (attributeLists != this.AttributeLists || modifiers != this.Modifiers || unionKeyword != this.UnionKeyword || identifier != this.Identifier || typeParameterList != this.TypeParameterList || baseList != this.BaseList || openBraceToken != this.OpenBraceToken || members != this.Members || closeBraceToken != this.CloseBraceToken || semicolonToken != this.SemicolonToken)
+        {
+            var newNode = SyntaxFactory.TaggedUnionDeclaration(attributeLists, modifiers, unionKeyword, identifier, typeParameterList, baseList, openBraceToken, members, closeBraceToken, semicolonToken);
+            var diags = GetDiagnostics();
+            if (diags?.Length > 0)
+                newNode = newNode.WithDiagnosticsGreen(diags);
+            var annotations = GetAnnotations();
+            if (annotations?.Length > 0)
+                newNode = newNode.WithAnnotationsGreen(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+        => new TaggedUnionDeclarationSyntax(this.Kind, this.attributeLists, this.modifiers, this.unionKeyword, this.identifier, this.typeParameterList, this.baseList, this.openBraceToken, this.members, this.closeBraceToken, this.semicolonToken, diagnostics, GetAnnotations());
+
+    internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+        => new TaggedUnionDeclarationSyntax(this.Kind, this.attributeLists, this.modifiers, this.unionKeyword, this.identifier, this.typeParameterList, this.baseList, this.openBraceToken, this.members, this.closeBraceToken, this.semicolonToken, GetDiagnostics(), annotations);
+}
+
+internal sealed partial class UnionCaseDeclarationSyntax : MemberDeclarationSyntax
+{
+    internal readonly GreenNode? attributeLists;
+    internal readonly GreenNode? modifiers;
+    internal readonly SyntaxToken identifier;
+    internal readonly ParameterListSyntax? parameterList;
+
+    internal UnionCaseDeclarationSyntax(SyntaxKind kind, GreenNode? attributeLists, GreenNode? modifiers, SyntaxToken identifier, ParameterListSyntax? parameterList, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+      : base(kind, diagnostics, annotations)
+    {
+        this.SlotCount = 4;
+        if (attributeLists != null)
+        {
+            this.AdjustFlagsAndWidth(attributeLists);
+            this.attributeLists = attributeLists;
+        }
+        if (modifiers != null)
+        {
+            this.AdjustFlagsAndWidth(modifiers);
+            this.modifiers = modifiers;
+        }
+        this.AdjustFlagsAndWidth(identifier);
+        this.identifier = identifier;
+        if (parameterList != null)
+        {
+            this.AdjustFlagsAndWidth(parameterList);
+            this.parameterList = parameterList;
+        }
+    }
+
+    internal UnionCaseDeclarationSyntax(SyntaxKind kind, GreenNode? attributeLists, GreenNode? modifiers, SyntaxToken identifier, ParameterListSyntax? parameterList, SyntaxFactoryContext context)
+      : base(kind)
+    {
+        this.SetFactoryContext(context);
+        this.SlotCount = 4;
+        if (attributeLists != null)
+        {
+            this.AdjustFlagsAndWidth(attributeLists);
+            this.attributeLists = attributeLists;
+        }
+        if (modifiers != null)
+        {
+            this.AdjustFlagsAndWidth(modifiers);
+            this.modifiers = modifiers;
+        }
+        this.AdjustFlagsAndWidth(identifier);
+        this.identifier = identifier;
+        if (parameterList != null)
+        {
+            this.AdjustFlagsAndWidth(parameterList);
+            this.parameterList = parameterList;
+        }
+    }
+
+    internal UnionCaseDeclarationSyntax(SyntaxKind kind, GreenNode? attributeLists, GreenNode? modifiers, SyntaxToken identifier, ParameterListSyntax? parameterList)
+      : base(kind)
+    {
+        this.SlotCount = 4;
+        if (attributeLists != null)
+        {
+            this.AdjustFlagsAndWidth(attributeLists);
+            this.attributeLists = attributeLists;
+        }
+        if (modifiers != null)
+        {
+            this.AdjustFlagsAndWidth(modifiers);
+            this.modifiers = modifiers;
+        }
+        this.AdjustFlagsAndWidth(identifier);
+        this.identifier = identifier;
+        if (parameterList != null)
+        {
+            this.AdjustFlagsAndWidth(parameterList);
+            this.parameterList = parameterList;
+        }
+    }
+
+    public override CoreSyntax.SyntaxList<AttributeListSyntax> AttributeLists => new CoreSyntax.SyntaxList<AttributeListSyntax>(this.attributeLists);
+    public override CoreSyntax.SyntaxList<SyntaxToken> Modifiers => new CoreSyntax.SyntaxList<SyntaxToken>(this.modifiers);
+    /// <summary>Gets the case identifier.</summary>
+    public SyntaxToken Identifier => this.identifier;
+    /// <summary>Gets the optional parameter list for the case.</summary>
+    public ParameterListSyntax? ParameterList => this.parameterList;
+
+    internal override GreenNode? GetSlot(int index)
+        => index switch
+        {
+            0 => this.attributeLists,
+            1 => this.modifiers,
+            2 => this.identifier,
+            3 => this.parameterList,
+            _ => null,
+        };
+
+    internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new CSharp.Syntax.UnionCaseDeclarationSyntax(this, parent, position);
+
+    public override void Accept(CSharpSyntaxVisitor visitor) => visitor.VisitUnionCaseDeclaration(this);
+    public override TResult Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) => visitor.VisitUnionCaseDeclaration(this);
+
+    public UnionCaseDeclarationSyntax Update(CoreSyntax.SyntaxList<AttributeListSyntax> attributeLists, CoreSyntax.SyntaxList<SyntaxToken> modifiers, SyntaxToken identifier, ParameterListSyntax parameterList)
+    {
+        if (attributeLists != this.AttributeLists || modifiers != this.Modifiers || identifier != this.Identifier || parameterList != this.ParameterList)
+        {
+            var newNode = SyntaxFactory.UnionCaseDeclaration(attributeLists, modifiers, identifier, parameterList);
+            var diags = GetDiagnostics();
+            if (diags?.Length > 0)
+                newNode = newNode.WithDiagnosticsGreen(diags);
+            var annotations = GetAnnotations();
+            if (annotations?.Length > 0)
+                newNode = newNode.WithAnnotationsGreen(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+        => new UnionCaseDeclarationSyntax(this.Kind, this.attributeLists, this.modifiers, this.identifier, this.parameterList, diagnostics, GetAnnotations());
+
+    internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+        => new UnionCaseDeclarationSyntax(this.Kind, this.attributeLists, this.modifiers, this.identifier, this.parameterList, GetDiagnostics(), annotations);
+}
+
 internal partial class CSharpSyntaxVisitor<TResult>
 {
     public virtual TResult VisitIdentifierName(IdentifierNameSyntax node) => this.DefaultVisit(node);
@@ -26848,6 +27293,7 @@ internal partial class CSharpSyntaxVisitor<TResult>
     public virtual TResult VisitNullableType(NullableTypeSyntax node) => this.DefaultVisit(node);
     public virtual TResult VisitTupleType(TupleTypeSyntax node) => this.DefaultVisit(node);
     public virtual TResult VisitTupleElement(TupleElementSyntax node) => this.DefaultVisit(node);
+    public virtual TResult VisitUnionType(UnionTypeSyntax node) => this.DefaultVisit(node);
     public virtual TResult VisitOmittedTypeArgument(OmittedTypeArgumentSyntax node) => this.DefaultVisit(node);
     public virtual TResult VisitRefType(RefTypeSyntax node) => this.DefaultVisit(node);
     public virtual TResult VisitScopedType(ScopedTypeSyntax node) => this.DefaultVisit(node);
@@ -27077,6 +27523,8 @@ internal partial class CSharpSyntaxVisitor<TResult>
     public virtual TResult VisitShebangDirectiveTrivia(ShebangDirectiveTriviaSyntax node) => this.DefaultVisit(node);
     public virtual TResult VisitIgnoredDirectiveTrivia(IgnoredDirectiveTriviaSyntax node) => this.DefaultVisit(node);
     public virtual TResult VisitNullableDirectiveTrivia(NullableDirectiveTriviaSyntax node) => this.DefaultVisit(node);
+    public virtual TResult VisitTaggedUnionDeclaration(TaggedUnionDeclarationSyntax node) => this.DefaultVisit(node);
+    public virtual TResult VisitUnionCaseDeclaration(UnionCaseDeclarationSyntax node) => this.DefaultVisit(node);
 }
 
 internal partial class CSharpSyntaxVisitor
@@ -27098,6 +27546,7 @@ internal partial class CSharpSyntaxVisitor
     public virtual void VisitNullableType(NullableTypeSyntax node) => this.DefaultVisit(node);
     public virtual void VisitTupleType(TupleTypeSyntax node) => this.DefaultVisit(node);
     public virtual void VisitTupleElement(TupleElementSyntax node) => this.DefaultVisit(node);
+    public virtual void VisitUnionType(UnionTypeSyntax node) => this.DefaultVisit(node);
     public virtual void VisitOmittedTypeArgument(OmittedTypeArgumentSyntax node) => this.DefaultVisit(node);
     public virtual void VisitRefType(RefTypeSyntax node) => this.DefaultVisit(node);
     public virtual void VisitScopedType(ScopedTypeSyntax node) => this.DefaultVisit(node);
@@ -27327,6 +27776,8 @@ internal partial class CSharpSyntaxVisitor
     public virtual void VisitShebangDirectiveTrivia(ShebangDirectiveTriviaSyntax node) => this.DefaultVisit(node);
     public virtual void VisitIgnoredDirectiveTrivia(IgnoredDirectiveTriviaSyntax node) => this.DefaultVisit(node);
     public virtual void VisitNullableDirectiveTrivia(NullableDirectiveTriviaSyntax node) => this.DefaultVisit(node);
+    public virtual void VisitTaggedUnionDeclaration(TaggedUnionDeclarationSyntax node) => this.DefaultVisit(node);
+    public virtual void VisitUnionCaseDeclaration(UnionCaseDeclarationSyntax node) => this.DefaultVisit(node);
 }
 
 internal partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<CSharpSyntaxNode>
@@ -27381,6 +27832,9 @@ internal partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<CSharpSyntaxNo
 
     public override CSharpSyntaxNode VisitTupleElement(TupleElementSyntax node)
         => node.Update((TypeSyntax)Visit(node.Type), (SyntaxToken)Visit(node.Identifier));
+
+    public override CSharpSyntaxNode VisitUnionType(UnionTypeSyntax node)
+        => node.Update((SyntaxToken)Visit(node.OpenParenToken), VisitList(node.Types), (SyntaxToken)Visit(node.CloseParenToken));
 
     public override CSharpSyntaxNode VisitOmittedTypeArgument(OmittedTypeArgumentSyntax node)
         => node.Update((SyntaxToken)Visit(node.OmittedTypeArgumentToken));
@@ -28068,6 +28522,12 @@ internal partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<CSharpSyntaxNo
 
     public override CSharpSyntaxNode VisitNullableDirectiveTrivia(NullableDirectiveTriviaSyntax node)
         => node.Update((SyntaxToken)Visit(node.HashToken), (SyntaxToken)Visit(node.NullableKeyword), (SyntaxToken)Visit(node.SettingToken), (SyntaxToken)Visit(node.TargetToken), (SyntaxToken)Visit(node.EndOfDirectiveToken), node.IsActive);
+
+    public override CSharpSyntaxNode VisitTaggedUnionDeclaration(TaggedUnionDeclarationSyntax node)
+        => node.Update(VisitList(node.AttributeLists), VisitList(node.Modifiers), (SyntaxToken)Visit(node.UnionKeyword), (SyntaxToken)Visit(node.Identifier), (TypeParameterListSyntax)Visit(node.TypeParameterList), (BaseListSyntax)Visit(node.BaseList), (SyntaxToken)Visit(node.OpenBraceToken), VisitList(node.Members), (SyntaxToken)Visit(node.CloseBraceToken), (SyntaxToken)Visit(node.SemicolonToken));
+
+    public override CSharpSyntaxNode VisitUnionCaseDeclaration(UnionCaseDeclarationSyntax node)
+        => node.Update(VisitList(node.AttributeLists), VisitList(node.Modifiers), (SyntaxToken)Visit(node.Identifier), (ParameterListSyntax)Visit(node.ParameterList));
 }
 
 internal partial class ContextAwareSyntax
@@ -28456,6 +28916,28 @@ internal partial class ContextAwareSyntax
         if (cached != null) return (TupleElementSyntax)cached;
 
         var result = new TupleElementSyntax(SyntaxKind.TupleElement, type, identifier, this.context);
+        if (hash >= 0)
+        {
+            SyntaxNodeCache.AddNode(result, hash);
+        }
+
+        return result;
+    }
+
+    public UnionTypeSyntax UnionType(SyntaxToken openParenToken, CoreSyntax.SeparatedSyntaxList<TypeSyntax> types, SyntaxToken closeParenToken)
+    {
+#if DEBUG
+        if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
+        if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
+        if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
+        if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
+#endif
+
+        int hash;
+        var cached = CSharpSyntaxNodeCache.TryGetNode((int)SyntaxKind.UnionType, openParenToken, types.Node, closeParenToken, this.context, out hash);
+        if (cached != null) return (UnionTypeSyntax)cached;
+
+        var result = new UnionTypeSyntax(SyntaxKind.UnionType, openParenToken, types.Node, closeParenToken, this.context);
         if (hash >= 0)
         {
             SyntaxNodeCache.AddNode(result, hash);
@@ -33426,6 +33908,55 @@ internal partial class ContextAwareSyntax
 
         return new NullableDirectiveTriviaSyntax(SyntaxKind.NullableDirectiveTrivia, hashToken, nullableKeyword, settingToken, targetToken, endOfDirectiveToken, isActive, this.context);
     }
+
+    public TaggedUnionDeclarationSyntax TaggedUnionDeclaration(CoreSyntax.SyntaxList<AttributeListSyntax> attributeLists, CoreSyntax.SyntaxList<SyntaxToken> modifiers, SyntaxToken unionKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, BaseListSyntax? baseList, SyntaxToken? openBraceToken, CoreSyntax.SeparatedSyntaxList<UnionCaseDeclarationSyntax> members, SyntaxToken? closeBraceToken, SyntaxToken? semicolonToken)
+    {
+#if DEBUG
+        if (unionKeyword == null) throw new ArgumentNullException(nameof(unionKeyword));
+        if (unionKeyword.Kind != SyntaxKind.UnionKeyword) throw new ArgumentException(nameof(unionKeyword));
+        if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+        if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
+        if (openBraceToken != null)
+        {
+            switch (openBraceToken.Kind)
+            {
+                case SyntaxKind.OpenBraceToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(openBraceToken));
+            }
+        }
+        if (closeBraceToken != null)
+        {
+            switch (closeBraceToken.Kind)
+            {
+                case SyntaxKind.CloseBraceToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(closeBraceToken));
+            }
+        }
+        if (semicolonToken != null)
+        {
+            switch (semicolonToken.Kind)
+            {
+                case SyntaxKind.SemicolonToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(semicolonToken));
+            }
+        }
+#endif
+
+        return new TaggedUnionDeclarationSyntax(SyntaxKind.TaggedUnionDeclaration, attributeLists.Node, modifiers.Node, unionKeyword, identifier, typeParameterList, baseList, openBraceToken, members.Node, closeBraceToken, semicolonToken, this.context);
+    }
+
+    public UnionCaseDeclarationSyntax UnionCaseDeclaration(CoreSyntax.SyntaxList<AttributeListSyntax> attributeLists, CoreSyntax.SyntaxList<SyntaxToken> modifiers, SyntaxToken identifier, ParameterListSyntax? parameterList)
+    {
+#if DEBUG
+        if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+        if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
+#endif
+
+        return new UnionCaseDeclarationSyntax(SyntaxKind.UnionCaseDeclaration, attributeLists.Node, modifiers.Node, identifier, parameterList, this.context);
+    }
 }
 
 internal static partial class SyntaxFactory
@@ -33809,6 +34340,28 @@ internal static partial class SyntaxFactory
         if (cached != null) return (TupleElementSyntax)cached;
 
         var result = new TupleElementSyntax(SyntaxKind.TupleElement, type, identifier);
+        if (hash >= 0)
+        {
+            SyntaxNodeCache.AddNode(result, hash);
+        }
+
+        return result;
+    }
+
+    public static UnionTypeSyntax UnionType(SyntaxToken openParenToken, CoreSyntax.SeparatedSyntaxList<TypeSyntax> types, SyntaxToken closeParenToken)
+    {
+#if DEBUG
+        if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
+        if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
+        if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
+        if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
+#endif
+
+        int hash;
+        var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.UnionType, openParenToken, types.Node, closeParenToken, out hash);
+        if (cached != null) return (UnionTypeSyntax)cached;
+
+        var result = new UnionTypeSyntax(SyntaxKind.UnionType, openParenToken, types.Node, closeParenToken);
         if (hash >= 0)
         {
             SyntaxNodeCache.AddNode(result, hash);
@@ -38778,5 +39331,54 @@ internal static partial class SyntaxFactory
 #endif
 
         return new NullableDirectiveTriviaSyntax(SyntaxKind.NullableDirectiveTrivia, hashToken, nullableKeyword, settingToken, targetToken, endOfDirectiveToken, isActive);
+    }
+
+    public static TaggedUnionDeclarationSyntax TaggedUnionDeclaration(CoreSyntax.SyntaxList<AttributeListSyntax> attributeLists, CoreSyntax.SyntaxList<SyntaxToken> modifiers, SyntaxToken unionKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, BaseListSyntax? baseList, SyntaxToken? openBraceToken, CoreSyntax.SeparatedSyntaxList<UnionCaseDeclarationSyntax> members, SyntaxToken? closeBraceToken, SyntaxToken? semicolonToken)
+    {
+#if DEBUG
+        if (unionKeyword == null) throw new ArgumentNullException(nameof(unionKeyword));
+        if (unionKeyword.Kind != SyntaxKind.UnionKeyword) throw new ArgumentException(nameof(unionKeyword));
+        if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+        if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
+        if (openBraceToken != null)
+        {
+            switch (openBraceToken.Kind)
+            {
+                case SyntaxKind.OpenBraceToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(openBraceToken));
+            }
+        }
+        if (closeBraceToken != null)
+        {
+            switch (closeBraceToken.Kind)
+            {
+                case SyntaxKind.CloseBraceToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(closeBraceToken));
+            }
+        }
+        if (semicolonToken != null)
+        {
+            switch (semicolonToken.Kind)
+            {
+                case SyntaxKind.SemicolonToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(semicolonToken));
+            }
+        }
+#endif
+
+        return new TaggedUnionDeclarationSyntax(SyntaxKind.TaggedUnionDeclaration, attributeLists.Node, modifiers.Node, unionKeyword, identifier, typeParameterList, baseList, openBraceToken, members.Node, closeBraceToken, semicolonToken);
+    }
+
+    public static UnionCaseDeclarationSyntax UnionCaseDeclaration(CoreSyntax.SyntaxList<AttributeListSyntax> attributeLists, CoreSyntax.SyntaxList<SyntaxToken> modifiers, SyntaxToken identifier, ParameterListSyntax? parameterList)
+    {
+#if DEBUG
+        if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+        if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
+#endif
+
+        return new UnionCaseDeclarationSyntax(SyntaxKind.UnionCaseDeclaration, attributeLists.Node, modifiers.Node, identifier, parameterList);
     }
 }

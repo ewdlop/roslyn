@@ -423,6 +423,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         AllowsKeyword = 8450,
         /// <summary>Represents <see langword="extension"/>.</summary>
         ExtensionKeyword = 8451,
+        /// <summary>Represents <see langword="union"/>.</summary>
+        UnionKeyword = 8452,
 
         // when adding a contextual keyword following functions must be adapted:
         // <see cref="SyntaxFacts.GetContextualKeywordKinds()"/>
@@ -799,7 +801,9 @@ namespace Microsoft.CodeAnalysis.CSharp
         StructDeclaration = 8856,
         InterfaceDeclaration = 8857,
         EnumDeclaration = 8858,
-        DelegateDeclaration = 8859,
+        TaggedUnionDeclaration = 8859,
+        UnionCaseDeclaration = 8860,
+        DelegateDeclaration = 8861,
 
         BaseList = 8864,
         SimpleBaseType = 8865,
@@ -850,10 +854,11 @@ namespace Microsoft.CodeAnalysis.CSharp
         // tuples
         TupleType = 8924,
         TupleElement = 8925,
-        TupleExpression = 8926,
-        SingleVariableDesignation = 8927,
-        ParenthesizedVariableDesignation = 8928,
-        ForEachVariableStatement = 8929,
+        UnionType = 8926,
+        TupleExpression = 8927,
+        SingleVariableDesignation = 8928,
+        ParenthesizedVariableDesignation = 8929,
+        ForEachVariableStatement = 8930,
 
         // patterns (for pattern-matching)
         DeclarationPattern = 9000,

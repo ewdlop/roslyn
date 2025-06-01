@@ -66,6 +66,9 @@ public partial class CSharpSyntaxVisitor<TResult>
     /// <summary>Called when the visitor visits a TupleElementSyntax node.</summary>
     public virtual TResult? VisitTupleElement(TupleElementSyntax node) => this.DefaultVisit(node);
 
+    /// <summary>Called when the visitor visits a UnionTypeSyntax node.</summary>
+    public virtual TResult? VisitUnionType(UnionTypeSyntax node) => this.DefaultVisit(node);
+
     /// <summary>Called when the visitor visits a OmittedTypeArgumentSyntax node.</summary>
     public virtual TResult? VisitOmittedTypeArgument(OmittedTypeArgumentSyntax node) => this.DefaultVisit(node);
 
@@ -752,6 +755,12 @@ public partial class CSharpSyntaxVisitor<TResult>
 
     /// <summary>Called when the visitor visits a NullableDirectiveTriviaSyntax node.</summary>
     public virtual TResult? VisitNullableDirectiveTrivia(NullableDirectiveTriviaSyntax node) => this.DefaultVisit(node);
+
+    /// <summary>Called when the visitor visits a TaggedUnionDeclarationSyntax node.</summary>
+    public virtual TResult? VisitTaggedUnionDeclaration(TaggedUnionDeclarationSyntax node) => this.DefaultVisit(node);
+
+    /// <summary>Called when the visitor visits a UnionCaseDeclarationSyntax node.</summary>
+    public virtual TResult? VisitUnionCaseDeclaration(UnionCaseDeclarationSyntax node) => this.DefaultVisit(node);
 }
 
 public partial class CSharpSyntaxVisitor
@@ -806,6 +815,9 @@ public partial class CSharpSyntaxVisitor
 
     /// <summary>Called when the visitor visits a TupleElementSyntax node.</summary>
     public virtual void VisitTupleElement(TupleElementSyntax node) => this.DefaultVisit(node);
+
+    /// <summary>Called when the visitor visits a UnionTypeSyntax node.</summary>
+    public virtual void VisitUnionType(UnionTypeSyntax node) => this.DefaultVisit(node);
 
     /// <summary>Called when the visitor visits a OmittedTypeArgumentSyntax node.</summary>
     public virtual void VisitOmittedTypeArgument(OmittedTypeArgumentSyntax node) => this.DefaultVisit(node);
@@ -1493,6 +1505,12 @@ public partial class CSharpSyntaxVisitor
 
     /// <summary>Called when the visitor visits a NullableDirectiveTriviaSyntax node.</summary>
     public virtual void VisitNullableDirectiveTrivia(NullableDirectiveTriviaSyntax node) => this.DefaultVisit(node);
+
+    /// <summary>Called when the visitor visits a TaggedUnionDeclarationSyntax node.</summary>
+    public virtual void VisitTaggedUnionDeclaration(TaggedUnionDeclarationSyntax node) => this.DefaultVisit(node);
+
+    /// <summary>Called when the visitor visits a UnionCaseDeclarationSyntax node.</summary>
+    public virtual void VisitUnionCaseDeclaration(UnionCaseDeclarationSyntax node) => this.DefaultVisit(node);
 }
 
 public partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<SyntaxNode?>
@@ -1547,6 +1565,9 @@ public partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<SyntaxNode?>
 
     public override SyntaxNode? VisitTupleElement(TupleElementSyntax node)
         => node.Update((TypeSyntax?)Visit(node.Type) ?? throw new ArgumentNullException("type"), VisitToken(node.Identifier));
+
+    public override SyntaxNode? VisitUnionType(UnionTypeSyntax node)
+        => node.Update(VisitToken(node.OpenParenToken), VisitList(node.Types), VisitToken(node.CloseParenToken));
 
     public override SyntaxNode? VisitOmittedTypeArgument(OmittedTypeArgumentSyntax node)
         => node.Update(VisitToken(node.OmittedTypeArgumentToken));
@@ -2234,6 +2255,12 @@ public partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<SyntaxNode?>
 
     public override SyntaxNode? VisitNullableDirectiveTrivia(NullableDirectiveTriviaSyntax node)
         => node.Update(VisitToken(node.HashToken), VisitToken(node.NullableKeyword), VisitToken(node.SettingToken), VisitToken(node.TargetToken), VisitToken(node.EndOfDirectiveToken), node.IsActive);
+
+    public override SyntaxNode? VisitTaggedUnionDeclaration(TaggedUnionDeclarationSyntax node)
+        => node.Update(VisitList(node.AttributeLists), VisitList(node.Modifiers), VisitToken(node.UnionKeyword), VisitToken(node.Identifier), (TypeParameterListSyntax?)Visit(node.TypeParameterList), (BaseListSyntax?)Visit(node.BaseList), VisitToken(node.OpenBraceToken), VisitList(node.Members), VisitToken(node.CloseBraceToken), VisitToken(node.SemicolonToken));
+
+    public override SyntaxNode? VisitUnionCaseDeclaration(UnionCaseDeclarationSyntax node)
+        => node.Update(VisitList(node.AttributeLists), VisitList(node.Modifiers), VisitToken(node.Identifier), (ParameterListSyntax?)Visit(node.ParameterList));
 }
 
 public static partial class SyntaxFactory
@@ -2474,6 +2501,18 @@ public static partial class SyntaxFactory
     /// <summary>Creates a new TupleElementSyntax instance.</summary>
     public static TupleElementSyntax TupleElement(TypeSyntax type)
         => SyntaxFactory.TupleElement(type, default);
+
+    /// <summary>Creates a new UnionTypeSyntax instance.</summary>
+    public static UnionTypeSyntax UnionType(SyntaxToken openParenToken, SeparatedSyntaxList<TypeSyntax> types, SyntaxToken closeParenToken)
+    {
+        if (openParenToken.Kind() != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
+        if (closeParenToken.Kind() != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
+        return (UnionTypeSyntax)Syntax.InternalSyntax.SyntaxFactory.UnionType((Syntax.InternalSyntax.SyntaxToken)openParenToken.Node!, types.Node.ToGreenSeparatedList<Syntax.InternalSyntax.TypeSyntax>(), (Syntax.InternalSyntax.SyntaxToken)closeParenToken.Node!).CreateRed();
+    }
+
+    /// <summary>Creates a new UnionTypeSyntax instance.</summary>
+    public static UnionTypeSyntax UnionType(SeparatedSyntaxList<TypeSyntax> types = default)
+        => SyntaxFactory.UnionType(SyntaxFactory.Token(SyntaxKind.OpenParenToken), types, SyntaxFactory.Token(SyntaxKind.CloseParenToken));
 
     /// <summary>Creates a new OmittedTypeArgumentSyntax instance.</summary>
     public static OmittedTypeArgumentSyntax OmittedTypeArgument(SyntaxToken omittedTypeArgumentToken)
@@ -6595,4 +6634,45 @@ public static partial class SyntaxFactory
     /// <summary>Creates a new NullableDirectiveTriviaSyntax instance.</summary>
     public static NullableDirectiveTriviaSyntax NullableDirectiveTrivia(SyntaxToken settingToken, bool isActive)
         => SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.HashToken), SyntaxFactory.Token(SyntaxKind.NullableKeyword), settingToken, default, SyntaxFactory.Token(SyntaxKind.EndOfDirectiveToken), isActive);
+
+    /// <summary>Creates a new TaggedUnionDeclarationSyntax instance.</summary>
+    public static TaggedUnionDeclarationSyntax TaggedUnionDeclaration(SyntaxList<AttributeListSyntax> attributeLists, SyntaxTokenList modifiers, SyntaxToken unionKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, BaseListSyntax? baseList, SyntaxToken openBraceToken, SeparatedSyntaxList<UnionCaseDeclarationSyntax> members, SyntaxToken closeBraceToken, SyntaxToken semicolonToken)
+    {
+        if (unionKeyword.Kind() != SyntaxKind.UnionKeyword) throw new ArgumentException(nameof(unionKeyword));
+        if (identifier.Kind() != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
+        switch (openBraceToken.Kind())
+        {
+            case SyntaxKind.OpenBraceToken:
+            case SyntaxKind.None: break;
+            default: throw new ArgumentException(nameof(openBraceToken));
+        }
+        switch (closeBraceToken.Kind())
+        {
+            case SyntaxKind.CloseBraceToken:
+            case SyntaxKind.None: break;
+            default: throw new ArgumentException(nameof(closeBraceToken));
+        }
+        switch (semicolonToken.Kind())
+        {
+            case SyntaxKind.SemicolonToken:
+            case SyntaxKind.None: break;
+            default: throw new ArgumentException(nameof(semicolonToken));
+        }
+        return (TaggedUnionDeclarationSyntax)Syntax.InternalSyntax.SyntaxFactory.TaggedUnionDeclaration(attributeLists.Node.ToGreenList<Syntax.InternalSyntax.AttributeListSyntax>(), modifiers.Node.ToGreenList<Syntax.InternalSyntax.SyntaxToken>(), (Syntax.InternalSyntax.SyntaxToken)unionKeyword.Node!, (Syntax.InternalSyntax.SyntaxToken)identifier.Node!, typeParameterList == null ? null : (Syntax.InternalSyntax.TypeParameterListSyntax)typeParameterList.Green, baseList == null ? null : (Syntax.InternalSyntax.BaseListSyntax)baseList.Green, (Syntax.InternalSyntax.SyntaxToken?)openBraceToken.Node, members.Node.ToGreenSeparatedList<Syntax.InternalSyntax.UnionCaseDeclarationSyntax>(), (Syntax.InternalSyntax.SyntaxToken?)closeBraceToken.Node, (Syntax.InternalSyntax.SyntaxToken?)semicolonToken.Node).CreateRed();
+    }
+
+    /// <summary>Creates a new UnionCaseDeclarationSyntax instance.</summary>
+    public static UnionCaseDeclarationSyntax UnionCaseDeclaration(SyntaxList<AttributeListSyntax> attributeLists, SyntaxTokenList modifiers, SyntaxToken identifier, ParameterListSyntax? parameterList)
+    {
+        if (identifier.Kind() != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
+        return (UnionCaseDeclarationSyntax)Syntax.InternalSyntax.SyntaxFactory.UnionCaseDeclaration(attributeLists.Node.ToGreenList<Syntax.InternalSyntax.AttributeListSyntax>(), modifiers.Node.ToGreenList<Syntax.InternalSyntax.SyntaxToken>(), (Syntax.InternalSyntax.SyntaxToken)identifier.Node!, parameterList == null ? null : (Syntax.InternalSyntax.ParameterListSyntax)parameterList.Green).CreateRed();
+    }
+
+    /// <summary>Creates a new UnionCaseDeclarationSyntax instance.</summary>
+    public static UnionCaseDeclarationSyntax UnionCaseDeclaration(SyntaxToken identifier)
+        => SyntaxFactory.UnionCaseDeclaration(default, default(SyntaxTokenList), identifier, default);
+
+    /// <summary>Creates a new UnionCaseDeclarationSyntax instance.</summary>
+    public static UnionCaseDeclarationSyntax UnionCaseDeclaration(string identifier)
+        => SyntaxFactory.UnionCaseDeclaration(default, default(SyntaxTokenList), SyntaxFactory.Identifier(identifier), default);
 }

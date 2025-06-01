@@ -1,0 +1,815 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="cs" original="../XmlLiterals.resx">
+    <body>
+      <trans-unit id="EmptyElement1">
+        <source>Class C
+	Sub Method()
+		Dim book = &lt;book
+					$$version="goo"
+                   /&gt;
+	End Sub
+End Class</source>
+        <target state="new">Class C
+	Sub Method()
+		Dim book = &lt;book
+					$$version="goo"
+                   /&gt;
+	End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IndentationTest1">
+        <source>Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main(args As String())
+        Dim abc = &lt;xml&gt;
+                      &lt;video&gt;video1&lt;/video&gt;
+                  &lt;/xml&gt;
+
+        Dim r = From q In abc...&lt;video&gt; _
+
+    End Sub
+End Module</source>
+        <target state="new">Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main(args As String())
+        Dim abc = &lt;xml&gt;
+                      &lt;video&gt;video1&lt;/video&gt;
+                  &lt;/xml&gt;
+
+        Dim r = From q In abc...&lt;video&gt; _
+
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IndentationTest2">
+        <source>Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+ 
+Module Program
+    Sub Main(args As String())
+        Dim abc = &lt;xml&gt;
+                      &lt;video&gt;video1&lt;/video&gt;
+                  &lt;/xml&gt;
+ 
+        Dim r = From q In abc...&lt;video&gt; ' comment
+
+    End Sub
+End Module</source>
+        <target state="new">Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+ 
+Module Program
+    Sub Main(args As String())
+        Dim abc = &lt;xml&gt;
+                      &lt;video&gt;video1&lt;/video&gt;
+                  &lt;/xml&gt;
+ 
+        Dim r = From q In abc...&lt;video&gt; ' comment
+
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test1_Input">
+        <source>Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;
+    &lt;hello&gt;
+    &lt;/hello&gt;
+&lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;
+    &lt;hello&gt;
+    &lt;/hello&gt;
+&lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test1_Output">
+        <source>Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;
+                    &lt;hello&gt;
+                    &lt;/hello&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;
+                    &lt;hello&gt;
+                    &lt;/hello&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test2_Input">
+        <source>Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;
+                    &lt;!-- Test --&gt;
+                    &lt;hello&gt;
+        Test
+        &lt;![CDATA[          ????             ]]&gt;
+                    &lt;/hello&gt;
+                    &lt;!-- Test --&gt;               &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;
+                    &lt;!-- Test --&gt;
+                    &lt;hello&gt;
+        Test
+        &lt;![CDATA[          ????             ]]&gt;
+                    &lt;/hello&gt;
+                    &lt;!-- Test --&gt;               &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test2_Output">
+        <source>Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;
+                    &lt;!-- Test --&gt;
+                    &lt;hello&gt;
+        Test
+        &lt;![CDATA[          ????             ]]&gt;
+                    &lt;/hello&gt;
+                    &lt;!-- Test --&gt;&lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;
+                    &lt;!-- Test --&gt;
+                    &lt;hello&gt;
+        Test
+        &lt;![CDATA[          ????             ]]&gt;
+                    &lt;/hello&gt;
+                    &lt;!-- Test --&gt;&lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test3_Input">
+        <source>Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;           &lt;!-- Test --&gt;               &lt;hello&gt;
+        Test
+        &lt;![CDATA[          ????             ]]&gt;
+    &lt;/hello&gt;
+    &lt;!-- Test --&gt;&lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;           &lt;!-- Test --&gt;               &lt;hello&gt;
+        Test
+        &lt;![CDATA[          ????             ]]&gt;
+    &lt;/hello&gt;
+    &lt;!-- Test --&gt;&lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test3_Output">
+        <source>Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;&lt;!-- Test --&gt;&lt;hello&gt;
+        Test
+        &lt;![CDATA[          ????             ]]&gt;
+                    &lt;/hello&gt;
+                    &lt;!-- Test --&gt;&lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method(Optional ByVal i As Integer = 1)
+        Dim q = &lt;xml&gt;&lt;!-- Test --&gt;&lt;hello&gt;
+        Test
+        &lt;![CDATA[          ????             ]]&gt;
+                    &lt;/hello&gt;
+                    &lt;!-- Test --&gt;&lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test4_Input">
+        <source>Class C
+    Sub Goo()
+        Dim xml = &lt;xml&gt;&lt;code&gt;&lt;node&gt;&lt;/node&gt;&lt;/code&gt;&lt;/xml&gt;
+
+        Dim j = From node In xml.&lt;code&gt;
+                Select node.@att
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Goo()
+        Dim xml = &lt;xml&gt;&lt;code&gt;&lt;node&gt;&lt;/node&gt;&lt;/code&gt;&lt;/xml&gt;
+
+        Dim j = From node In xml.&lt;code&gt;
+                Select node.@att
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test4_Output">
+        <source>Class C
+    Sub Goo()
+        Dim xml = &lt;xml&gt;&lt;code&gt;&lt;node&gt;&lt;/node&gt;&lt;/code&gt;&lt;/xml&gt;
+
+        Dim j = From node In xml.&lt;code&gt;
+                Select node.@att
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Goo()
+        Dim xml = &lt;xml&gt;&lt;code&gt;&lt;node&gt;&lt;/node&gt;&lt;/code&gt;&lt;/xml&gt;
+
+        Dim j = From node In xml.&lt;code&gt;
+                Select node.@att
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test5_Input">
+        <source>''' &lt;summary&gt;
+'''
+                          ''' &lt;/summary&gt;
+Module Program
+  Sub Main(args As String())
+  End Sub
+End Module</source>
+        <target state="new">''' &lt;summary&gt;
+'''
+                          ''' &lt;/summary&gt;
+Module Program
+  Sub Main(args As String())
+  End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test5_Output">
+        <source>''' &lt;summary&gt;
+'''
+''' &lt;/summary&gt;
+Module Program
+    Sub Main(args As String())
+    End Sub
+End Module</source>
+        <target state="new">''' &lt;summary&gt;
+'''
+''' &lt;/summary&gt;
+Module Program
+    Sub Main(args As String())
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test6_Input">
+        <source>Class C
+    '''&lt;summary&gt;
+        '''     Test Method
+'''&lt;/summary&gt;
+    Sub Method()
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    '''&lt;summary&gt;
+        '''     Test Method
+'''&lt;/summary&gt;
+    Sub Method()
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Test6_Output">
+        <source>Class C
+    '''&lt;summary&gt;
+    '''     Test Method
+    '''&lt;/summary&gt;
+    Sub Method()
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    '''&lt;summary&gt;
+    '''     Test Method
+    '''&lt;/summary&gt;
+    Sub Method()
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TokenFormatter1">
+        <source>Class CL
+    Dim d = &lt;Code&gt;
+$$&lt;/Code&gt;
+End Class</source>
+        <target state="new">Class CL
+    Dim d = &lt;Code&gt;
+$$&lt;/Code&gt;
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TokenFormatter2">
+        <source>Namespace NS
+    &lt;ComClass("")&gt; 
+$$&lt;CLSCompliant(False)&gt;
+    Public Class CL
+    End Class
+End Namespace</source>
+        <target state="new">Namespace NS
+    &lt;ComClass("")&gt; 
+$$&lt;CLSCompliant(False)&gt;
+    Public Class CL
+    End Class
+End Namespace</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlElementStartTag1_Input">
+        <source>Class C
+	Sub Method()
+		Dim book = &lt;book
+                   version="goo"
+                   &gt;
+                   &lt;/book&gt;
+	End Sub
+End Class</source>
+        <target state="new">Class C
+	Sub Method()
+		Dim book = &lt;book
+                   version="goo"
+                   &gt;
+                   &lt;/book&gt;
+	End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlElementStartTag1_Output">
+        <source>Class C
+    Sub Method()
+        Dim book = &lt;book
+                       version="goo"
+                       &gt;
+                   &lt;/book&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method()
+        Dim book = &lt;book
+                       version="goo"
+                       &gt;
+                   &lt;/book&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest1_Input">
+        <source>Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book =                   &lt;/book     &gt;
+        GetXml(          &lt;/book         &gt;)
+    End Sub
+End Module</source>
+        <target state="new">Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book =                   &lt;/book     &gt;
+        GetXml(          &lt;/book         &gt;)
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest1_Output">
+        <source>Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book =                   &lt;/book&gt;
+        GetXml(          &lt;/book&gt;)
+    End Sub
+End Module</source>
+        <target state="new">Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book =                   &lt;/book&gt;
+        GetXml(          &lt;/book&gt;)
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest1_TokenFormat">
+        <source>Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book = &lt;?xml version ="1.0"?&gt;&lt;?fff fff?&gt;&lt;!-- ffff --&gt;
+$$&lt;book/&gt;&lt;!-- last comment! yeah :) --&gt;
+
+    End Sub
+End Module</source>
+        <target state="new">Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book = &lt;?xml version ="1.0"?&gt;&lt;?fff fff?&gt;&lt;!-- ffff --&gt;
+$$&lt;book/&gt;&lt;!-- last comment! yeah :) --&gt;
+
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest2_Input">
+        <source>Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book = &lt;?xml version="1.0"?&gt;
+                             &lt;?fff fff?&gt;
+    &lt;!-- ffff --&gt;
+                 &lt;book/&gt;
+      &lt;!-- last comment! yeah :) --&gt;
+
+    End Sub
+End Module</source>
+        <target state="new">Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book = &lt;?xml version="1.0"?&gt;
+                             &lt;?fff fff?&gt;
+    &lt;!-- ffff --&gt;
+                 &lt;book/&gt;
+      &lt;!-- last comment! yeah :) --&gt;
+
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest2_Output">
+        <source>Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book = &lt;?xml version="1.0"?&gt;
+                   &lt;?fff fff?&gt;
+                   &lt;!-- ffff --&gt;
+                   &lt;book/&gt;
+                   &lt;!-- last comment! yeah :) --&gt;
+
+    End Sub
+End Module</source>
+        <target state="new">Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main()
+        Dim book = &lt;?xml version="1.0"?&gt;
+                   &lt;?fff fff?&gt;
+                   &lt;!-- ffff --&gt;
+                   &lt;book/&gt;
+                   &lt;!-- last comment! yeah :) --&gt;
+
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest3_Input">
+        <source>Module Program
+    Sub Main()
+        Dim x = &lt;?xml version="1.0"?&gt;
+                                         &lt;?blah?&gt;
+    &lt;xml&gt;&lt;/xml&gt;
+    End Sub
+End Module</source>
+        <target state="new">Module Program
+    Sub Main()
+        Dim x = &lt;?xml version="1.0"?&gt;
+                                         &lt;?blah?&gt;
+    &lt;xml&gt;&lt;/xml&gt;
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest3_Output">
+        <source>Module Program
+    Sub Main()
+        Dim x = &lt;?xml version="1.0"?&gt;
+                &lt;?blah?&gt;
+                &lt;xml&gt;&lt;/xml&gt;
+    End Sub
+End Module</source>
+        <target state="new">Module Program
+    Sub Main()
+        Dim x = &lt;?xml version="1.0"?&gt;
+                &lt;?blah?&gt;
+                &lt;xml&gt;&lt;/xml&gt;
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest4_Input_Output">
+        <source>Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main(args As String())
+        Dim goo = _
+                     &lt;LongBook&gt;
+                         &lt;%= _
+                             From i In &lt;were&gt;&lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;&lt;/were&gt; _
+                             Where i IsNot Nothing _
+                             Select _
+                                 &lt;f&gt;
+                                     &lt;g&gt;
+                                         &lt;f&gt;
+                                         &lt;/f&gt;
+                                     &lt;/g&gt;
+                                 &lt;/f&gt; _
+                         %&gt;
+                     &lt;/LongBook&gt;
+
+    End Sub
+End Module</source>
+        <target state="new">Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Main(args As String())
+        Dim goo = _
+                     &lt;LongBook&gt;
+                         &lt;%= _
+                             From i In &lt;were&gt;&lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;&lt;/were&gt; _
+                             Where i IsNot Nothing _
+                             Select _
+                                 &lt;f&gt;
+                                     &lt;g&gt;
+                                         &lt;f&gt;
+                                         &lt;/f&gt;
+                                     &lt;/g&gt;
+                                 &lt;/f&gt; _
+                         %&gt;
+                     &lt;/LongBook&gt;
+
+    End Sub
+End Module</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest5_Input">
+        <source>Class C
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    test &lt;xml2&gt;&lt;%= &lt;xml3&gt;&lt;xml4&gt;
+                                                          &lt;/xml4&gt;&lt;/xml3&gt;
+                    %&gt;&lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    test &lt;xml2&gt;&lt;%= &lt;xml3&gt;&lt;xml4&gt;
+                                                          &lt;/xml4&gt;&lt;/xml3&gt;
+                    %&gt;&lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest5_Output">
+        <source>Class C
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    test &lt;xml2&gt;&lt;%= &lt;xml3&gt;&lt;xml4&gt;
+                                       &lt;/xml4&gt;&lt;/xml3&gt;
+                               %&gt;&lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    test &lt;xml2&gt;&lt;%= &lt;xml3&gt;&lt;xml4&gt;
+                                       &lt;/xml4&gt;&lt;/xml3&gt;
+                               %&gt;&lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest6_Input">
+        <source>Class C2
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                   tst  &lt;%= &lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                                                   &lt;/xml4&gt;&lt;/xml3&gt;
+                                                   &lt;/xml2&gt;
+                    %&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C2
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                   tst  &lt;%= &lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                                                   &lt;/xml4&gt;&lt;/xml3&gt;
+                                                   &lt;/xml2&gt;
+                    %&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest6_Output">
+        <source>Class C2
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                   tst  &lt;%= &lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                                &lt;/xml4&gt;&lt;/xml3&gt;
+                            &lt;/xml2&gt;
+                        %&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C2
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                   tst  &lt;%= &lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                                &lt;/xml4&gt;&lt;/xml3&gt;
+                            &lt;/xml2&gt;
+                        %&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest7_Input">
+        <source>Class C22
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                   tst   
+&lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                    &lt;/xml4&gt;&lt;/xml3&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C22
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                   tst   
+&lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                    &lt;/xml4&gt;&lt;/xml3&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest7_Output">
+        <source>Class C22
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                   tst   
+&lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                        &lt;/xml4&gt;&lt;/xml3&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C22
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                   tst   
+&lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                        &lt;/xml4&gt;&lt;/xml3&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest8_Input">
+        <source>Class C223
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    &lt;!-- --&gt;
+                   t
+        st   
+&lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                    &lt;/xml4&gt;&lt;/xml3&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C223
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    &lt;!-- --&gt;
+                   t
+        st   
+&lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                    &lt;/xml4&gt;&lt;/xml3&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest8_Output">
+        <source>Class C223
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    &lt;!-- --&gt;
+                   t
+        st   
+&lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                        &lt;/xml4&gt;&lt;/xml3&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C223
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    &lt;!-- --&gt;
+                   t
+        st   
+&lt;xml2&gt;&lt;xml3&gt;&lt;xml4&gt;
+                        &lt;/xml4&gt;&lt;/xml3&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="XmlTest9">
+        <source>Class C
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    &lt;xml2&gt;&lt;%= &lt;xml3&gt;&lt;xml4&gt;
+                                  &lt;/xml4&gt;
+$$&lt;/xml3&gt;
+                          %&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</source>
+        <target state="new">Class C
+    Sub Method()
+        Dim q = &lt;xml&gt;
+                    &lt;xml2&gt;&lt;%= &lt;xml3&gt;&lt;xml4&gt;
+                                  &lt;/xml4&gt;
+$$&lt;/xml3&gt;
+                          %&gt;
+                    &lt;/xml2&gt;
+                &lt;/xml&gt;
+    End Sub
+End Class</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

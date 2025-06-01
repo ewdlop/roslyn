@@ -383,6 +383,32 @@
       <Kind Name="IdentifierToken"/>
     </Field>
   </Node>
+  <Node Name="UnionTypeSyntax" Base="TypeSyntax">
+    <Kind Name="UnionType"/>
+    <Field Name="OpenParenToken" Type="SyntaxToken">
+      <Kind Name="OpenParenToken"/>
+      <PropertyComment>
+        <summary>SyntaxToken representing the open parenthesis.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="Types" Type="SeparatedSyntaxList&lt;TypeSyntax&gt;" MinCount="2">
+      <PropertyComment>
+        <summary>SeparatedSyntaxList of TypeSyntax nodes representing the union types.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="CloseParenToken" Type="SyntaxToken">
+      <Kind Name="CloseParenToken"/>
+      <PropertyComment>
+        <summary>SyntaxToken representing the close parenthesis.</summary>
+      </PropertyComment>
+    </Field>
+    <TypeComment>
+      <summary>Class which represents the syntax node for union type (A | B).</summary>
+    </TypeComment>
+    <FactoryComment>
+      <summary>Creates a UnionTypeSyntax node.</summary>
+    </FactoryComment>
+  </Node>
   <Node Name="OmittedTypeArgumentSyntax" Base="TypeSyntax">
     <Kind Name="OmittedTypeArgument"/>
     <Field Name="OmittedTypeArgumentToken" Type="SyntaxToken">
@@ -502,7 +528,7 @@
       <Kind Name="MinusMinusToken"/>
       <Kind Name="AmpersandToken"/>
       <Kind Name="AsteriskToken"/>
-      <Kind Name="CaretToken"/>"
+      <Kind Name="CaretToken"/>
       <PropertyComment>
         <summary>SyntaxToken representing the kind of the operator of the prefix unary expression.</summary>
       </PropertyComment>
@@ -5173,5 +5199,58 @@
       <Kind Name="EndOfDirectiveToken"/>
     </Field>
     <Field Name="IsActive" Type="bool" Override="true"/>
+  </Node>
+  <Node Name="TaggedUnionDeclarationSyntax" Base="BaseTypeDeclarationSyntax" SkipConvenienceFactories="true">
+    <TypeComment>
+      <summary>Tagged union type declaration syntax.</summary>
+    </TypeComment>
+    <Kind Name="TaggedUnionDeclaration"/>
+    <Field Name="AttributeLists" Type="SyntaxList&lt;AttributeListSyntax&gt;" Override="true"/>
+    <Field Name="Modifiers" Type="SyntaxList&lt;SyntaxToken&gt;" Override="true"/>
+    <Field Name="UnionKeyword" Type="SyntaxToken">
+      <PropertyComment>
+        <summary>Gets the union keyword token.</summary>
+      </PropertyComment>
+      <Kind Name="UnionKeyword"/>
+    </Field>
+    <Field Name="Identifier" Type="SyntaxToken" Override="true">
+      <Kind Name="IdentifierToken"/>
+    </Field>
+    <Field Name="TypeParameterList" Type="TypeParameterListSyntax" Optional="true"/>
+    <Field Name="BaseList" Type="BaseListSyntax" Optional="true" Override="true">
+    </Field>
+    <Field Name="OpenBraceToken" Type="SyntaxToken" Override="true" Optional="true">
+      <Kind Name="OpenBraceToken"/>
+    </Field>
+    <Field Name="Members" Type="SeparatedSyntaxList&lt;UnionCaseDeclarationSyntax&gt;" AllowTrailingSeparator="true">
+      <PropertyComment>
+        <summary>Gets the union case declaration list.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="CloseBraceToken" Type="SyntaxToken" Override="true" Optional="true">
+      <Kind Name="CloseBraceToken"/>
+    </Field>
+    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true" Override="true">
+      <PropertyComment>
+        <summary>Gets the optional semicolon token.</summary>
+      </PropertyComment>
+      <Kind Name="SemicolonToken"/>
+    </Field>
+  </Node>
+  <Node Name="UnionCaseDeclarationSyntax" Base="MemberDeclarationSyntax">
+    <Kind Name="UnionCaseDeclaration"/>
+    <Field Name="AttributeLists" Type="SyntaxList&lt;AttributeListSyntax&gt;" Override="true"/>
+    <Field Name="Modifiers" Type="SyntaxList&lt;SyntaxToken&gt;" Override="true"/>
+    <Field Name="Identifier" Type="SyntaxToken">
+      <PropertyComment>
+        <summary>Gets the case identifier.</summary>
+      </PropertyComment>
+      <Kind Name="IdentifierToken"/>
+    </Field>
+    <Field Name="ParameterList" Type="ParameterListSyntax" Optional="true">
+      <PropertyComment>
+        <summary>Gets the optional parameter list for the case.</summary>
+      </PropertyComment>
+    </Field>
   </Node>
 </Tree>

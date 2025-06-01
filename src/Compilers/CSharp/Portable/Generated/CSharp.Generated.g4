@@ -83,6 +83,7 @@ member_declaration
   | enum_member_declaration
   | global_statement
   | incomplete_member
+  | union_case_declaration
   ;
 
 base_field_declaration
@@ -293,6 +294,7 @@ property_declaration
 
 base_type_declaration
   : enum_declaration
+  | tagged_union_declaration
   | type_declaration
   ;
 
@@ -319,6 +321,14 @@ simple_base_type
 
 enum_member_declaration
   : attribute_list* modifier* identifier_token equals_value_clause?
+  ;
+
+tagged_union_declaration
+  : attribute_list* modifier* 'union' identifier_token type_parameter_list? base_list? '{'? (union_case_declaration (',' union_case_declaration)* ','?)? '}'? ';'?
+  ;
+
+union_case_declaration
+  : attribute_list* modifier* identifier_token parameter_list?
   ;
 
 type_declaration
@@ -372,6 +382,7 @@ type
   | ref_type
   | scoped_type
   | tuple_type
+  | union_type
   ;
 
 array_type
@@ -452,6 +463,10 @@ tuple_type
 
 tuple_element
   : type identifier_token?
+  ;
+
+union_type
+  : '(' type (',' type)+ ')'
   ;
 
 statement
