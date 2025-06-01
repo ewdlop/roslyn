@@ -8914,7 +8914,121 @@ parse_member_name:;
             return this.CurrentToken.Kind == SyntaxKind.OpenBracketToken || this.IsTrueIdentifier();
         }
 
-        private bool IsDotOrColonColon()
+            private MemberDeclarationSyntax ParseTaggedUnionDeclaration(SyntaxList<AttributeListSyntax> attributes, SyntaxListBuilder modifiers)
+            {
+                Debug.Assert(this.CurrentToken.ContextualKind == SyntaxKind.UnionKeyword);
+
+                var unionToken = ConvertToKeyword(this.EatToken());
+                var name = this.ParseIdentifierToken();
+
+                // check to see if the user tried to create a generic union.
+                var typeParameters = this.ParseTypeParameterList();
+
+                if (typeParameters != null)
+                {
+                    name = AddTrailingSkippedSyntax(name, typeParameters);
+                    name = this.AddError(name, ErrorCode.ERR_UnexpectedGenericName);
+                }
+
+                BaseListSyntax baseList = null;
+                if (this.CurrentToken.Kind == SyntaxKind.ColonToken)
+                {
+                    var colon = this.EatToken(SyntaxKind.ColonToken);
+                    var type = this.ParseType();
+                    var tmpList = _pool.AllocateSeparated<BaseTypeSyntax>();
+                    tmpList.Add(_syntaxFactory.SimpleBaseType(type));
+                    baseList = _syntaxFactory.BaseList(
+                        colon,
+                        _pool.ToListAndFree(tmpList));
+                }
+
+                var members = default(SeparatedSyntaxList<UnionCaseDeclarationSyntax>);
+                SyntaxToken semicolon;
+                SyntaxToken openBrace;
+                SyntaxToken closeBrace;
+
+                if (CurrentToken.Kind == SyntaxKind.SemicolonToken)
+                {
+                    semicolon = EatToken(SyntaxKind.SemicolonToken);
+                    openBrace = null;
+                    closeBrace = null;
+                }
+                else
+                {
+                    openBrace = this.EatToken(SyntaxKind.OpenBraceToken);
+
+                    if (!openBrace.IsMissing)
+                    {
+                        // Parse union members (variants)
+                        members = this.ParseCommaSeparatedSyntaxList(
+                            ref openBrace,
+                            SyntaxKind.CloseBraceToken,
+                            static @this => @this.IsPossibleUnionMemberDeclaration(),
+                            static @this => @this.ParseUnionMemberDeclaration(),
+                            skipBadUnionMemberListTokens,
+                            allowTrailingSeparator: true,
+                            requireOneElement: false,
+                            allowSemicolonAsSeparator: false);
+                    }
+
+                    closeBrace = this.EatToken(SyntaxKind.CloseBraceToken);
+                    semicolon = TryEatToken(SyntaxKind.SemicolonToken);
+                }
+
+                return _syntaxFactory.TaggedUnionDeclaration(
+                    attributes,
+                    modifiers.ToList(),
+                    unionToken,
+                    name,
+                    typeParameters,
+                    baseList,
+                    openBrace,
+                    members,
+                    closeBrace,
+                    semicolon);
+
+                static PostSkipAction skipBadUnionMemberListTokens(
+                    LanguageParser @this, ref SyntaxToken openBrace, SeparatedSyntaxListBuilder<UnionCaseDeclarationSyntax> list, SyntaxKind expectedKind, SyntaxKind closeKind)
+                {
+                    return @this.SkipBadSeparatedListTokensWithExpectedKind(ref openBrace, list,
+                        static p => p.CurrentToken.Kind is not SyntaxKind.CommaToken && !p.IsPossibleUnionMemberDeclaration(),
+                        static (p, closeKind) => p.CurrentToken.Kind == closeKind,
+                        expectedKind, closeKind);
+                }
+            }
+
+            private UnionCaseDeclarationSyntax ParseUnionMemberDeclaration()
+            {
+                if (this.IsIncrementalAndFactoryContextMatches && this.CurrentNodeKind == SyntaxKind.UnionCaseDeclaration)
+                {
+                    return (UnionCaseDeclarationSyntax)this.EatNode();
+                }
+
+                var memberAttrs = this.ParseAttributeDeclarations(inExpressionContext: false);
+                var memberName = this.ParseIdentifierToken();
+
+                // Parse optional parameters for the variant
+                ParameterListSyntax parameters = null;
+
+                if (this.CurrentToken.Kind == SyntaxKind.OpenParenToken)
+                {
+                    parameters = this.ParseParenthesizedParameterList();
+                }
+
+                return _syntaxFactory.UnionCaseDeclaration(
+                    memberAttrs,
+                    modifiers: default,
+                    memberName,
+                    parameters);
+            }
+
+            private bool IsPossibleUnionMemberDeclaration()
+            {
+                return this.CurrentToken.Kind == SyntaxKind.OpenBracketToken || this.IsTrueIdentifier();
+            }
+
+
+            private bool IsDotOrColonColon()
         {
             return this.CurrentToken.Kind is SyntaxKind.DotToken or SyntaxKind.ColonColonToken;
         }
