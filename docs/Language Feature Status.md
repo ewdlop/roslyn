@@ -16,6 +16,8 @@ efforts behind them.
 
 # Working Set VB
 
+R.I.P
+
 # C# 14.0
 
 | Feature | Branch | State | Developer | Reviewer | IDE Buddy | LDM Champ |

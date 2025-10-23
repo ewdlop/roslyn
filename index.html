@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roslyn - .NET 編譯器平台完整解析</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="https://user-images.githubusercontent.com/46729679/109719841-17b7dd00-7b5e-11eb-8f5e-87eb2d4d1be9.png" alt="Roslyn Logo" class="logo">
+                <span class="brand-name">Roslyn</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#overview">概覽</a></li>
+                <li><a href="#architecture">架構</a></li>
+                <li><a href="#components">組件</a></li>
+                <li><a href="#features">功能</a></li>
+                <li><a href="#workflow">開發流程</a></li>
+                <li><a href="#community">社群</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Roslyn</span>
+                    <br>.NET 編譯器平台
+                </h1>
+                <p class="hero-subtitle">
+                    開源實現的 C# 和 Visual Basic 編譯器，具備完整的程式碼分析 API
+                </p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-value">5,263</div>
+                        <div class="stat-label">編譯器檔案</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">20,000+</div>
+                        <div class="stat-label">原始碼檔案</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">開源</div>
+                    </div>
+                </div>
+                <div class="hero-buttons">
+                    <a href="https://github.com/dotnet/roslyn" class="btn btn-primary" target="_blank">
+                        <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                        查看 GitHub
+                    </a>
+                    <a href="#overview" class="btn btn-secondary">深入了解</a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-background"></div>
+    </section>
+
+    <!-- 概覽 Section -->
+    <section id="overview" class="section">
+        <div class="container">
+            <h2 class="section-title">專案概覽</h2>
+            <div class="content-grid">
+                <div class="content-card highlight">
+                    <div class="card-icon">🎯</div>
+                    <h3>核心使命</h3>
+                    <p>Roslyn 打破了傳統編譯器的「黑盒子」模式，將編譯器轉變為平台。過去，原始碼進入編譯器，經過複雜處理後產生目的碼，但編譯過程中建立的深度知識隨即被遺忘。</p>
+                    <p>現在，Roslyn 開放這些資訊，讓工具和開發者能夠利用編譯器對程式碼的深刻理解，實現 IntelliSense、重構、智慧重新命名、「尋找所有參考」等功能。</p>
+                </div>
+                
+                <div class="content-card">
+                    <div class="card-icon">📊</div>
+                    <h3>專案規模</h3>
+                    <ul class="feature-list">
+                        <li><strong>Compilers:</strong> 5,263 個檔案（3,310 C#，1,475 VB，138 DLL）</li>
+                        <li><strong>Workspaces:</strong> 2,646 個檔案（工作區管理和文件處理）</li>
+                        <li><strong>Features:</strong> 2,895 個檔案（IDE 功能實現）</li>
+                        <li><strong>VisualStudio:</strong> 2,123 個檔案（VS 整合）</li>
+                        <li><strong>LanguageServer:</strong> 1,138 個檔案（LSP 實現）</li>
+                    </ul>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-icon">🚀</div>
+                    <h3>主要特色</h3>
+                    <ul class="feature-list">
+                        <li>完全開源的 C# 和 VB 編譯器實現</li>
+                        <li>豐富的 API 用於程式碼分析和生成</li>
+                        <li>支援增量編譯和即時程式碼分析</li>
+                        <li>內建 Source Generator 支援</li>
+                        <li>與 Visual Studio 深度整合</li>
+                        <li>跨平台支援（Windows、Linux、macOS）</li>
+                    </ul>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-icon">🔧</div>
+                    <h3>語言功能狀態</h3>
+                    <p><strong>C# 14.0</strong> 進行中的功能：</p>
+                    <ul class="feature-list">
+                        <li><code>field</code> 關鍵字在屬性中</li>
+                        <li>一級 Span 類型支援</li>
+                        <li>部分事件和建構函式</li>
+                        <li>擴展 (Extensions)</li>
+                        <li>Null 條件賦值</li>
+                        <li>字典表達式</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 架構 Section -->
+    <section id="architecture" class="section bg-dark">
+        <div class="container">
+            <h2 class="section-title">編譯器架構</h2>
+            <div class="architecture-diagram">
+                <h3 class="diagram-title">分層編譯管線</h3>
+                <div class="pipeline">
+                    <div class="pipeline-stage">
+                        <div class="stage-number">1</div>
+                        <h4>詞法分析 (Lexer)</h4>
+                        <p>將原始碼轉換為標記 (Token) 序列</p>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-stage">
+                        <div class="stage-number">2</div>
+                        <h4>語法分析 (Parser)</h4>
+                        <p>根據語言文法建立語法樹</p>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-stage">
+                        <div class="stage-number">3</div>
+                        <h4>宣告分析</h4>
+                        <p>分析宣告並形成符號表</p>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-stage">
+                        <div class="stage-number">4</div>
+                        <h4>綁定 (Binding)</h4>
+                        <p>將識別碼與符號匹配</p>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-stage">
+                        <div class="stage-number">5</div>
+                        <h4>語意分析</h4>
+                        <p>執行類型檢查和語意驗證</p>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-stage">
+                        <div class="stage-number">6</div>
+                        <h4>降低/重寫</h4>
+                        <p>將高階結構轉換為低階形式</p>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-stage">
+                        <div class="stage-number">7</div>
+                        <h4>發出 (Emit)</h4>
+                        <p>生成 IL 位元組碼</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-layers">
+                <h3 class="diagram-title">API 分層架構</h3>
+                <div class="layer-stack">
+                    <div class="layer layer-1">
+                        <div class="layer-title">Workspaces APIs</div>
+                        <div class="layer-description">
+                            解決方案/專案模型、文件管理、主機服務
+                        </div>
+                    </div>
+                    <div class="layer layer-2">
+                        <div class="layer-title">Compiler APIs</div>
+                        <div class="layer-description">
+                            語法樹、符號、語意模型、診斷、發出 API
+                        </div>
+                    </div>
+                    <div class="layer layer-3">
+                        <div class="layer-title">Core Infrastructure</div>
+                        <div class="layer-description">
+                            語言無關的編譯器基礎設施、集合、執行緒處理
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="architecture-features">
+                <div class="arch-feature">
+                    <h4>🔒 不可變性</h4>
+                    <p>Compilation 物件是不可變且可重用的。透過 <code>AddSyntaxTrees()</code>、<code>RemoveSyntaxTrees()</code>、<code>ReplaceSyntaxTree()</code> 進行增量變更。</p>
+                </div>
+                <div class="arch-feature">
+                    <h4>⚡ 效能優化</h4>
+                    <p>使用 <code>InternalSyntax</code> 命名空間進行效能關鍵的解析，避免 LINQ 和 foreach（對於沒有 struct enumerator 的集合）。</p>
+                </div>
+                <div class="arch-feature">
+                    <h4>🔄 增量編譯</h4>
+                    <p>支援增量語法樹更新和符號重新計算，提供快速的 IDE 體驗。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 組件 Section -->
+    <section id="components" class="section">
+        <div class="container">
+            <h2 class="section-title">主要組件詳解</h2>
+            
+            <div class="component-tabs">
+                <button class="tab-btn active" data-tab="compilers">編譯器</button>
+                <button class="tab-btn" data-tab="workspaces">工作區</button>
+                <button class="tab-btn" data-tab="features">功能層</button>
+                <button class="tab-btn" data-tab="editor">編輯器</button>
+                <button class="tab-btn" data-tab="vs">Visual Studio</button>
+                <button class="tab-btn" data-tab="lsp">語言伺服器</button>
+            </div>
+
+            <div class="tab-content active" id="compilers">
+                <div class="component-detail">
+                    <h3>Compilers 組件</h3>
+                    <p class="component-path"><code>src/Compilers/</code></p>
+                    <div class="component-info">
+                        <div class="info-section">
+                            <h4>檔案統計</h4>
+                            <ul>
+                                <li>總檔案數：5,263</li>
+                                <li>C# 檔案：3,310</li>
+                                <li>VB 檔案：1,475</li>
+                                <li>DLL 檔案：138</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>核心目錄</h4>
+                            <ul>
+                                <li><code>Core/Portable/</code> - 語言無關的編譯器基礎設施</li>
+                                <li><code>CSharp/Portable/</code> - C# 編譯器實現</li>
+                                <li><code>VisualBasic/Portable/</code> - VB 編譯器實現</li>
+                                <li><code>Test/</code> - 編譯器測試套件</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>主要功能</h4>
+                            <ul>
+                                <li>語法分析和語法樹建立</li>
+                                <li>語意分析和符號表建立</li>
+                                <li>類型檢查和綁定</li>
+                                <li>IL 程式碼生成</li>
+                                <li>診斷和錯誤報告</li>
+                                <li>元資料讀取和寫入</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="code-example">
+                        <h4>範例：建立編譯</h4>
+                        <pre><code>using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+
+// 建立語法樹
+var tree = CSharpSyntaxTree.ParseText(@"
+    public class MyClass {
+        public void MyMethod() {
+            System.Console.WriteLine(""Hello"");
+        }
+    }
+");
+
+// 建立編譯
+var compilation = CSharpCompilation.Create("MyAssembly")
+    .AddReferences(MetadataReference.CreateFromFile(
+        typeof(object).Assembly.Location))
+    .AddSyntaxTrees(tree);
+
+// 執行語意分析
+var diagnostics = compilation.GetDiagnostics();</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="workspaces">
+                <div class="component-detail">
+                    <h3>Workspaces 組件</h3>
+                    <p class="component-path"><code>src/Workspaces/</code></p>
+                    <div class="component-info">
+                        <div class="info-section">
+                            <h4>檔案統計</h4>
+                            <ul>
+                                <li>總檔案數：2,646</li>
+                                <li>C# 檔案：2,039</li>
+                                <li>VB 檔案：256</li>
+                                <li>XLF 檔案：169</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>核心概念</h4>
+                            <ul>
+                                <li><strong>Workspace</strong> - 解決方案的抽象表示</li>
+                                <li><strong>Solution</strong> - 專案的集合</li>
+                                <li><strong>Project</strong> - 文件和參考的集合</li>
+                                <li><strong>Document</strong> - 單一原始碼檔案</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>主要功能</h4>
+                            <ul>
+                                <li>解決方案和專案模型管理</li>
+                                <li>文件追蹤和版本控制</li>
+                                <li>主機服務整合</li>
+                                <li>持久性儲存</li>
+                                <li>程式碼重構支援</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="code-example">
+                        <h4>範例：工作區操作</h4>
+                        <pre><code>using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.MSBuild;
+
+// 開啟工作區
+var workspace = MSBuildWorkspace.Create();
+var solution = await workspace.OpenSolutionAsync("MySolution.sln");
+
+// 取得專案
+var project = solution.Projects.First();
+
+// 取得文件
+var document = project.Documents.First();
+
+// 取得語法樹
+var tree = await document.GetSyntaxTreeAsync();
+
+// 修改文件
+var newDocument = document.WithText(newText);</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="features">
+                <div class="component-detail">
+                    <h3>Features 組件</h3>
+                    <p class="component-path"><code>src/Features/</code></p>
+                    <div class="component-info">
+                        <div class="info-section">
+                            <h4>檔案統計</h4>
+                            <ul>
+                                <li>總檔案數：2,895</li>
+                                <li>C# 檔案：2,207</li>
+                                <li>VB 檔案：574</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>語言無關功能</h4>
+                            <ul>
+                                <li>程式碼完成 (IntelliSense)</li>
+                                <li>程式碼重構</li>
+                                <li>程式碼修復</li>
+                                <li>尋找參考</li>
+                                <li>重新命名</li>
+                                <li>導航功能</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>分析器功能</h4>
+                            <ul>
+                                <li>診斷分析器</li>
+                                <li>程式碼修復提供者</li>
+                                <li>重構提供者</li>
+                                <li>語意模型查詢</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="editor">
+                <div class="component-detail">
+                    <h3>EditorFeatures 組件</h3>
+                    <p class="component-path"><code>src/EditorFeatures/</code></p>
+                    <div class="component-info">
+                        <div class="info-section">
+                            <h4>檔案統計</h4>
+                            <ul>
+                                <li>總檔案數：2,285</li>
+                                <li>C# 檔案：1,496</li>
+                                <li>VB 檔案：665</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>編輯器整合</h4>
+                            <ul>
+                                <li>文字緩衝區管理</li>
+                                <li>語法著色</li>
+                                <li>錯誤波浪線顯示</li>
+                                <li>即時程式碼分析</li>
+                                <li>程式碼摺疊</li>
+                                <li>括號匹配</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>互動式功能</h4>
+                            <ul>
+                                <li>智慧縮排</li>
+                                <li>自動完成</li>
+                                <li>程式碼片段</li>
+                                <li>快速資訊</li>
+                                <li>簽名說明</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="vs">
+                <div class="component-detail">
+                    <h3>VisualStudio 組件</h3>
+                    <p class="component-path"><code>src/VisualStudio/</code></p>
+                    <div class="component-info">
+                        <div class="info-section">
+                            <h4>檔案統計</h4>
+                            <ul>
+                                <li>總檔案數：2,123</li>
+                                <li>C# 檔案：1,504</li>
+                                <li>VB 檔案：314</li>
+                                <li>XLF 檔案：169</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>VS 整合</h4>
+                            <ul>
+                                <li>語言服務實現</li>
+                                <li>專案系統整合</li>
+                                <li>工具視窗</li>
+                                <li>選項頁面</li>
+                                <li>命令處理</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>UI 組件</h4>
+                            <ul>
+                                <li>物件瀏覽器</li>
+                                <li>類別檢視</li>
+                                <li>錯誤清單</li>
+                                <li>尋找符號結果</li>
+                                <li>重構預覽</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="lsp">
+                <div class="component-detail">
+                    <h3>LanguageServer 組件</h3>
+                    <p class="component-path"><code>src/LanguageServer/</code></p>
+                    <div class="component-info">
+                        <div class="info-section">
+                            <h4>檔案統計</h4>
+                            <ul>
+                                <li>總檔案數：1,138</li>
+                                <li>C# 檔案：1,074</li>
+                                <li>XLF 檔案：26</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>LSP 實現</h4>
+                            <ul>
+                                <li>語言伺服器協定支援</li>
+                                <li>跨編輯器相容性</li>
+                                <li>VS Code 整合</li>
+                                <li>其他編輯器支援</li>
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>支援的功能</h4>
+                            <ul>
+                                <li>文件同步</li>
+                                <li>自動完成</li>
+                                <li>轉到定義</li>
+                                <li>尋找參考</li>
+                                <li>懸停資訊</li>
+                                <li>診斷</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能展示 Section -->
+    <section id="features" class="section bg-dark">
+        <div class="container">
+            <h2 class="section-title">關鍵功能特色</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌳</div>
+                    <h3>語法樹 API</h3>
+                    <p>完整的語法樹表示，包含所有原始碼資訊（包括空白和註解）。支援不可變操作和高效的增量更新。</p>
+                    <ul class="tech-list">
+                        <li>SyntaxNode（語法節點）</li>
+                        <li>SyntaxToken（語法標記）</li>
+                        <li>SyntaxTrivia（語法瑣碎資訊）</li>
+                        <li>完整保真度樹</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>語意分析</h3>
+                    <p>豐富的語意資訊 API，包括符號解析、類型資訊、資料流分析和控制流分析。</p>
+                    <ul class="tech-list">
+                        <li>符號表 (Symbol Table)</li>
+                        <li>語意模型 (Semantic Model)</li>
+                        <li>類型推斷</li>
+                        <li>資料流和控制流分析</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>Source Generators</h3>
+                    <p>在編譯時生成程式碼的強大機制，支援增量生成器以獲得最佳效能。</p>
+                    <ul class="tech-list">
+                        <li>ISourceGenerator 介面</li>
+                        <li>IIncrementalGenerator</li>
+                        <li>編譯時程式碼生成</li>
+                        <li>增量計算</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>診斷分析器</h3>
+                    <p>可擴展的診斷系統，允許自訂分析器和程式碼修復。與 MSBuild 和 IDE 深度整合。</p>
+                    <ul class="tech-list">
+                        <li>DiagnosticAnalyzer</li>
+                        <li>CodeFixProvider</li>
+                        <li>自訂警告和錯誤</li>
+                        <li>批次修復支援</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>程式碼重構</h3>
+                    <p>完整的重構基礎設施，支援安全的程式碼轉換和重新命名操作。</p>
+                    <ul class="tech-list">
+                        <li>重新命名符號</li>
+                        <li>提取方法/介面</li>
+                        <li>內聯變數</li>
+                        <li>移動類型到檔案</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>效能最佳化</h3>
+                    <p>專為大型程式碼庫設計，採用增量編譯、物件池和結構化列舉器等技術。</p>
+                    <ul class="tech-list">
+                        <li>增量編譯</li>
+                        <li>物件池 (Object Pools)</li>
+                        <li>避免配置</li>
+                        <li>結構化列舉器</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>語法著色</h3>
+                    <p>精確的語法分類和語意著色，提供豐富的編輯器體驗。</p>
+                    <ul class="tech-list">
+                        <li>分類器 (Classifiers)</li>
+                        <li>語意標記</li>
+                        <li>括號匹配</li>
+                        <li>區域摺疊</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>IntelliSense</h3>
+                    <p>強大的程式碼完成和建議系統，提供上下文感知的智慧提示。</p>
+                    <ul class="tech-list">
+                        <li>完成提供者</li>
+                        <li>簽名說明</li>
+                        <li>快速資訊</li>
+                        <li>參數提示</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 開發流程 Section -->
+    <section id="workflow" class="section">
+        <div class="container">
+            <h2 class="section-title">開發工作流程</h2>
+            
+            <div class="workflow-grid">
+                <div class="workflow-section">
+                    <h3>🔨 建置專案</h3>
+                    <div class="code-block">
+                        <div class="code-header">PowerShell / Bash</div>
+                        <pre><code># Windows
+.\Build.cmd
+
+# Linux / macOS
+./build.sh
+
+# 只建置編譯器
+dotnet build Compilers.slnf
+
+# 只建置 IDE 功能
+dotnet build Ide.slnf</code></pre>
+                    </div>
+                </div>
+
+                <div class="workflow-section">
+                    <h3>🧪 執行測試</h3>
+                    <div class="code-block">
+                        <div class="code-header">測試命令</div>
+                        <pre><code># 執行所有測試
+.\Test.cmd
+./test.sh
+
+# 執行特定測試專案
+dotnet test src/Compilers/CSharp/Test/Syntax/
+
+# 執行特定測試
+dotnet test --filter "FullyQualifiedName~MyTestClass"</code></pre>
+                    </div>
+                </div>
+
+                <div class="workflow-section">
+                    <h3>📝 程式碼格式化</h3>
+                    <div class="code-block">
+                        <div class="code-header">格式化命令</div>
+                        <pre><code># 格式化空白
+dotnet format whitespace --folder . --include path/to/file.cs
+
+# 驗證程式碼格式
+.\eng\validate-code-formatting.ps1
+
+# 更新本地化檔案 (.xlf)
+dotnet msbuild path/to/project.csproj /t:UpdateXlf</code></pre>
+                    </div>
+                </div>
+
+                <div class="workflow-section">
+                    <h3>🔍 除錯編譯器</h3>
+                    <div class="code-block">
+                        <div class="code-header">除錯設定</div>
+                        <pre><code># 使用 Visual Studio
+1. 開啟 Roslyn.sln
+2. 設定 csc 或 vbc 專案為啟動專案
+3. 設定命令列參數
+4. F5 開始除錯
+
+# 使用 VS Code
+1. 開啟 .vscode/launch.json
+2. 選擇設定
+3. F5 開始除錯</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="best-practices">
+                <h3>最佳實踐</h3>
+                <div class="practices-grid">
+                    <div class="practice-card">
+                        <h4>🎯 記憶體管理</h4>
+                        <ul>
+                            <li>在熱路徑中避免使用 LINQ</li>
+                            <li>避免在沒有 struct enumerator 的集合上使用 foreach</li>
+                            <li>廣泛使用物件池（參考 <code>PooledObjects</code>）</li>
+                            <li>使用 <code>Debug.Assert()</code> 進行內部驗證</li>
+                        </ul>
+                    </div>
+                    <div class="practice-card">
+                        <h4>📋 測試慣例</h4>
+                        <ul>
+                            <li>繼承自 <code>CSharpTestBase</code> 或 <code>VisualBasicTestBase</code></li>
+                            <li>使用 <code>[Fact]</code> 和 <code>[Theory]</code> 屬性</li>
+                            <li>使用 <code>[UseExportProvider]</code> 進行 MEF 測試</li>
+                            <li>遵循 Arrange-Act-Assert 模式</li>
+                        </ul>
+                    </div>
+                    <div class="practice-card">
+                        <h4>🏗️ API 設計</h4>
+                        <ul>
+                            <li>使用不可變模式</li>
+                            <li>提供流暢的 API 介面</li>
+                            <li>遵循 .NET 命名慣例</li>
+                            <li>充分的 XML 文件註解</li>
+                        </ul>
+                    </div>
+                    <div class="practice-card">
+                        <h4>🔄 提交 PR</h4>
+                        <ul>
+                            <li>尋找標有 "help wanted" 的議題</li>
+                            <li>先發布設計說明取得反饋</li>
+                            <li>確保所有測試通過</li>
+                            <li>遵循 .editorconfig 設定</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社群 Section -->
+    <section id="community" class="section bg-dark">
+        <div class="container">
+            <h2 class="section-title">社群與貢獻</h2>
+            
+            <div class="community-grid">
+                <div class="community-card">
+                    <div class="community-icon">
+                        <svg width="64" height="64" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                    </div>
+                    <h3>GitHub Repository</h3>
+                    <p>在 GitHub 上探索原始碼、提出議題或貢獻程式碼。</p>
+                    <a href="https://github.com/dotnet/roslyn" class="community-link" target="_blank">
+                        訪問 Repository →
+                    </a>
+                </div>
+
+                <div class="community-card">
+                    <div class="community-icon">💬</div>
+                    <h3>GitHub Discussions</h3>
+                    <p>參與討論、提問問題、分享想法與其他開發者交流。</p>
+                    <a href="https://github.com/dotnet/roslyn/discussions" class="community-link" target="_blank">
+                        加入討論 →
+                    </a>
+                </div>
+
+                <div class="community-card">
+                    <div class="community-icon">🎮</div>
+                    <h3>Discord</h3>
+                    <p>加入 C# 社群 Discord 的 Roslyn 頻道進行即時對話。</p>
+                    <a href="https://discord.com/invite/tGJvv88" class="community-link" target="_blank">
+                        加入 Discord →
+                    </a>
+                </div>
+
+                <div class="community-card">
+                    <div class="community-icon">📚</div>
+                    <h3>文件</h3>
+                    <p>閱讀完整的 API 文件和架構概述。</p>
+                    <a href="https://docs.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/" class="community-link" target="_blank">
+                        查看文件 →
+                    </a>
+                </div>
+
+                <div class="community-card">
+                    <div class="community-icon">🐛</div>
+                    <h3>回報問題</h3>
+                    <p>發現錯誤？在 GitHub Issues 上回報問題。</p>
+                    <a href="https://github.com/dotnet/roslyn/issues/new" class="community-link" target="_blank">
+                        回報問題 →
+                    </a>
+                </div>
+
+                <div class="community-card">
+                    <div class="community-icon">✨</div>
+                    <h3>功能建議</h3>
+                    <p>對 C# 或 VB 有新功能想法？到相應的 repo 提出建議。</p>
+                    <div class="link-group">
+                        <a href="https://github.com/dotnet/csharplang" class="community-link" target="_blank">
+                            C# 語言 →
+                        </a>
+                        <a href="https://github.com/dotnet/vblang" class="community-link" target="_blank">
+                            VB 語言 →
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contribution-info">
+                <h3>如何貢獻</h3>
+                <div class="contribution-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h4>尋找議題</h4>
+                        <p>尋找標有「help wanted」或「good first issue」的議題</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h4>討論方案</h4>
+                        <p>在開始編碼前，先在議題中討論你的方案</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h4>Fork 並複製</h4>
+                        <p>Fork repository 並複製到本地</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h4>開發和測試</h4>
+                        <p>實現功能或修復，並添加測試</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <h4>提交 PR</h4>
+                        <p>提交 Pull Request 並等待審核</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h3>專案統計</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">20,000+</div>
+                        <div class="stat-label">原始碼檔案</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">100+</div>
+                        <div class="stat-label">貢獻者</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">多個</div>
+                        <div class="stat-label">Azure 管線</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">持續</div>
+                        <div class="stat-label">CI/CD</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Roslyn</h4>
+                    <p>.NET 編譯器平台</p>
+                    <p class="footer-note">本專案是 .NET Foundation 的一部分</p>
+                </div>
+                <div class="footer-section">
+                    <h4>快速連結</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/dotnet/roslyn">GitHub</a></li>
+                        <li><a href="https://docs.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/">文件</a></li>
+                        <li><a href="https://github.com/dotnet/roslyn/discussions">討論區</a></li>
+                        <li><a href="https://github.com/dotnet/roslyn/blob/main/CONTRIBUTING.md">貢獻指南</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>相關專案</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/dotnet/csharplang">C# 語言設計</a></li>
+                        <li><a href="https://github.com/dotnet/vblang">VB 語言設計</a></li>
+                        <li><a href="https://github.com/dotnet/runtime">.NET Runtime</a></li>
+                        <li><a href="https://dotnetfoundation.org/">.NET Foundation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>授權</h4>
+                    <p>MIT License</p>
+                    <p class="footer-note">© Microsoft Corporation</p>
+                    <p class="footer-note">本網站僅供教育和展示目的</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>此網站基於 Roslyn 專案資訊生成 | 資料截至 2025 年 10 月</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
