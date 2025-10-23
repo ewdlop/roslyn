@@ -90543,25 +90543,19 @@ class C
     }
 }";
             var comp = CreateCompilation(new[] { source }, options: WithNullableEnable());
-            comp.VerifyDiagnostics(
-                // (7,27): error CS0186: Use of null is not valid in this context
-                //         foreach (var x in (IEnumerable?)null) // 1
-                Diagnostic(ErrorCode.ERR_NullNotValid, "(IEnumerable?)null").WithLocation(7, 27),
-                // (10,27): error CS0186: Use of null is not valid in this context
-                //         foreach (var y in (IEnumerable<object>)default) // 2
-                Diagnostic(ErrorCode.ERR_NullNotValid, "(IEnumerable<object>)default").WithLocation(10, 27),
-                // (13,27): error CS0186: Use of null is not valid in this context
-                //         foreach (var z in default(IEnumerable)) // 3
-                Diagnostic(ErrorCode.ERR_NullNotValid, "default(IEnumerable)").WithLocation(13, 27),
-                // (7,27): warning CS8602: Dereference of a possibly null reference.
+            comp.VerifyEmitDiagnostics(
+                // 0.cs(7,27): warning CS8602: Dereference of a possibly null reference.
                 //         foreach (var x in (IEnumerable?)null) // 1
                 Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "(IEnumerable?)null").WithLocation(7, 27),
-                // (10,27): warning CS8600: Converting null literal or possible null value to non-nullable type.
+                // 0.cs(10,27): warning CS8600: Converting null literal or possible null value to non-nullable type.
                 //         foreach (var y in (IEnumerable<object>)default) // 2
                 Diagnostic(ErrorCode.WRN_ConvertingNullableToNonNullable, "(IEnumerable<object>)default").WithLocation(10, 27),
-                // (10,27): warning CS8602: Dereference of a possibly null reference.
+                // 0.cs(10,27): warning CS8602: Dereference of a possibly null reference.
                 //         foreach (var y in (IEnumerable<object>)default) // 2
-                Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "(IEnumerable<object>)default").WithLocation(10, 27));
+                Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "(IEnumerable<object>)default").WithLocation(10, 27),
+                // 0.cs(13,27): warning CS8602: Dereference of a possibly null reference.
+                //         foreach (var z in default(IEnumerable)) // 3
+                Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "default(IEnumerable)").WithLocation(13, 27));
         }
 
         [WorkItem(23493, "https://github.com/dotnet/roslyn/issues/23493")]
@@ -91444,8 +91438,10 @@ namespace System
     public class Object { }
     public struct Void { }
     public class ValueType { }
+    public abstract class Enum : ValueType { }
     public struct Boolean { }
     public struct Int32 { }
+    public struct Byte { }
     public class Exception { }
     public struct Char
     {
@@ -91468,6 +91464,33 @@ namespace System
     public abstract class Attribute
     {
         protected Attribute() { }
+    }
+
+    public enum AttributeTargets
+    {
+        Assembly = 0x0001,
+        Module = 0x0002,
+        Class = 0x0004,
+        Struct = 0x0008,
+        Enum = 0x0010,
+        Constructor = 0x0020,
+        Method = 0x0040,
+        Property = 0x0080,
+        Field = 0x0100,
+        Event = 0x0200,
+        Interface = 0x0400,
+        Parameter = 0x0800,
+        Delegate = 0x1000,
+        ReturnValue = 0x2000,
+        GenericParameter = 0x4000,
+        All = 0x7FFF
+    }
+
+    public sealed class AttributeUsageAttribute : Attribute
+    {
+        public AttributeUsageAttribute(AttributeTargets validOn) { }
+        public bool AllowMultiple { get; set; }
+        public bool Inherited { get; set; }
     }
 }
 
@@ -91535,23 +91558,22 @@ class C
 }";
 
             var comp = CreateEmptyCompilation(new[] { source, systemSource }, options: WithNullableEnable());
-            comp.VerifyDiagnostics(
-                // (11,13): warning CS8600: Converting null literal or possible null value to non-nullable type.
+            comp.VerifyEmitDiagnostics(
+                // warning CS8021: No value for RuntimeMetadataVersion found. No assembly containing System.Object was found nor was a value for RuntimeMetadataVersion specified through options.
+                Diagnostic(ErrorCode.WRN_NoRuntimeMetadataVersion).WithLocation(1, 1),
+                // 0.cs(11,13): warning CS8600: Converting null literal or possible null value to non-nullable type.
                 //         s = null; // 1
                 Diagnostic(ErrorCode.WRN_ConvertingNullableToNonNullable, "null").WithLocation(11, 13),
-                // (12,27): warning CS8602: Dereference of a possibly null reference.
+                // 0.cs(12,27): warning CS8602: Dereference of a possibly null reference.
                 //         foreach (var c in s) // 2
                 Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "s").WithLocation(12, 27),
-                // (17,27): warning CS8602: Dereference of a possibly null reference.
+                // 0.cs(17,27): warning CS8602: Dereference of a possibly null reference.
                 //         foreach (var c in s2) // 3
                 Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "s2").WithLocation(17, 27),
-                // (22,27): error CS0186: Use of null is not valid in this context
-                //         foreach (var c in (string)null) // 4
-                Diagnostic(ErrorCode.ERR_NullNotValid, "(string)null").WithLocation(22, 27),
-                // (22,27): warning CS8600: Converting null literal or possible null value to non-nullable type.
+                // 0.cs(22,27): warning CS8600: Converting null literal or possible null value to non-nullable type.
                 //         foreach (var c in (string)null) // 4
                 Diagnostic(ErrorCode.WRN_ConvertingNullableToNonNullable, "(string)null").WithLocation(22, 27),
-                // (22,27): warning CS8602: Dereference of a possibly null reference.
+                // 0.cs(22,27): warning CS8602: Dereference of a possibly null reference.
                 //         foreach (var c in (string)null) // 4
                 Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "(string)null").WithLocation(22, 27));
         }
