@@ -145821,9 +145821,9 @@ interface I2 : I<(int c, int d)> {}
 ";
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics(
-                // (6,11): error CS1061: 'C' does not contain a definition for 'Extension' and no accessible extension method 'Extension' accepting a first argument of type 'C' could be found (are you missing a using directive or an assembly reference?)
+                // (6,11): error CS0411: The type arguments for method 'P.Extension<T>(I<T>)' cannot be inferred from the usage. Try specifying the type arguments explicitly.
                 //         c.Extension();
-                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "Extension").WithArguments("C", "Extension").WithLocation(6, 11),
+                Diagnostic(ErrorCode.ERR_CantInferMethTypeArgs, "Extension").WithArguments("P.Extension<T>(I<T>)").WithLocation(6, 11),
                 // (12,7): error CS8140: 'I<(int c, int d)>' is already listed in the interface list on type 'C' with different tuple element names, as 'I<(int a, int b)>'.
                 // class C : I<(int a, int b)>, I2 {}
                 Diagnostic(ErrorCode.ERR_DuplicateInterfaceWithTupleNamesInBaseList, "C").WithArguments("I<(int c, int d)>", "I<(int a, int b)>", "C").WithLocation(12, 7)
@@ -145973,9 +145973,9 @@ interface I<T> {}
 ";
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics(
-                // (7,11): error CS1061: 'C' does not contain a definition for 'Extension' and no accessible extension method 'Extension' accepting a first argument of type 'C' could be found (are you missing a using directive or an assembly reference?)
+                // (7,11): error CS0411: The type arguments for method 'P.Extension<T>(I<T>)' cannot be inferred from the usage. Try specifying the type arguments explicitly.
                 //         c.Extension();
-                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "Extension").WithArguments("C", "Extension").WithLocation(7, 11),
+                Diagnostic(ErrorCode.ERR_CantInferMethTypeArgs, "Extension").WithArguments("P.Extension<T>(I<T>)").WithLocation(7, 11),
                 // (13,7): error CS8140: 'I<(object? c, object? d)>' is already listed in the interface list on type 'C' with different tuple element names, as 'I<(object a, object b)>'.
                 // class C : I<(object a, object b)>, I<(object? c, object? d)>
                 Diagnostic(ErrorCode.ERR_DuplicateInterfaceWithTupleNamesInBaseList, "C").WithArguments("I<(object? c, object? d)>", "I<(object a, object b)>", "C").WithLocation(13, 7)
@@ -146029,9 +146029,9 @@ interface I<T> {}
 ";
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics(
-                // (7,11): error CS1061: 'C' does not contain a definition for 'Extension' and no accessible extension method 'Extension' accepting a first argument of type 'C' could be found (are you missing a using directive or an assembly reference?)
+                // (7,11): error CS0411: The type arguments for method 'P.Extension<T>(I<T>)' cannot be inferred from the usage. Try specifying the type arguments explicitly.
                 //         c.Extension();
-                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "Extension").WithArguments("C", "Extension").WithLocation(7, 11),
+                Diagnostic(ErrorCode.ERR_CantInferMethTypeArgs, "Extension").WithArguments("P.Extension<T>(I<T>)").WithLocation(7, 11),
                 // (13,7): error CS8140: 'I<(int c, int d)>' is already listed in the interface list on type 'C' with different tuple element names, as 'I<(int a, int b)>'.
                 // class C : I<(int a, int b)>, I<(int c, int d)> {}
                 Diagnostic(ErrorCode.ERR_DuplicateInterfaceWithTupleNamesInBaseList, "C").WithArguments("I<(int c, int d)>", "I<(int a, int b)>", "C").WithLocation(13, 7)
@@ -146225,9 +146225,9 @@ interface I2 : I<(int c, int d)> {}
 ";
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics(
-                // (6,11): error CS1061: 'T' does not contain a definition for 'Extension' and no accessible extension method 'Extension' accepting a first argument of type 'T' could be found (are you missing a using directive or an assembly reference?)
+                // (6,11): error CS0411: The type arguments for method 'P.Extension<T>(I<T>)' cannot be inferred from the usage. Try specifying the type arguments explicitly.
                 //         c.Extension();
-                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "Extension").WithArguments("T", "Extension").WithLocation(6, 11)
+                Diagnostic(ErrorCode.ERR_CantInferMethTypeArgs, "Extension").WithArguments("P.Extension<T>(I<T>)").WithLocation(6, 11)
                 );
         }
 
