@@ -3218,6 +3218,9 @@ class C<T>
         public void RefAssignment_Foreach_Nested()
         {
             verify(fieldType: "string?",
+                // (4,20): warning CS0649: Field 'C.Field' is never assigned to, and will always have its default value null
+                //     public string? Field;
+                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("C.Field", "null").WithLocation(4, 20),
                 // (9,13): warning CS8602: Dereference of a possibly null reference.
                 //             item.Field.ToString();
                 Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "item.Field").WithLocation(9, 13));
@@ -3225,7 +3228,11 @@ class C<T>
             verify(fieldType: "string",
                 // (4,19): warning CS8618: Non-nullable field 'Field' is uninitialized. Consider declaring the field as nullable.
                 //     public string Field;
-                Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "Field").WithArguments("field", "Field").WithLocation(4, 19));
+                Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "Field").WithArguments("field", "Field").WithLocation(4, 19),
+                // (4,19): warning CS0649: Field 'C.Field' is never assigned to, and will always have its default value null
+                //     public string Field;
+                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("C.Field", "null").WithLocation(4, 19)
+                );
 
             void verify(string fieldType, params DiagnosticDescription[] expected)
             {
@@ -146672,12 +146679,12 @@ class C
 
             var compilation1 = CreateCompilation(source, parseOptions: TestOptions.Regular, targetFramework: TargetFramework.NetCoreApp);
             compilation1.VerifyDiagnostics(
-                // (13,17): error CS0034: Operator '+' is ambiguous on operands of type 'T' and 'T'
+                // (13,19): error CS9342: Operator resolution is ambiguous between the following members: 'I<(int a, int b)>.operator +(I<(int a, int b)>, I<(int a, int b)>)' and 'I<(int c, int d)>.operator +(I<(int c, int d)>, I<(int c, int d)>)'
                 //         var z = x + y;
-                Diagnostic(ErrorCode.ERR_AmbigBinaryOps, "x + y").WithArguments("+", "T", "T").WithLocation(13, 17),
-                // (14,13): error CS0034: Operator '+' is ambiguous on operands of type 'T' and 'T'
+                Diagnostic(ErrorCode.ERR_AmbigOperator, "+").WithArguments("I<(int a, int b)>.operator +(I<(int a, int b)>, I<(int a, int b)>)", "I<(int c, int d)>.operator +(I<(int c, int d)>, I<(int c, int d)>)").WithLocation(13, 19),
+                // (14,15): error CS9342: Operator resolution is ambiguous between the following members: 'I<(int a, int b)>.operator +(I<(int a, int b)>, I<(int a, int b)>)' and 'I<(int c, int d)>.operator +(I<(int c, int d)>, I<(int c, int d)>)'
                 //         z = y + x;
-                Diagnostic(ErrorCode.ERR_AmbigBinaryOps, "y + x").WithArguments("+", "T", "T").WithLocation(14, 13)
+                Diagnostic(ErrorCode.ERR_AmbigOperator, "+").WithArguments("I<(int a, int b)>.operator +(I<(int a, int b)>, I<(int a, int b)>)", "I<(int c, int d)>.operator +(I<(int c, int d)>, I<(int c, int d)>)").WithLocation(14, 15)
                 );
         }
 
@@ -161676,6 +161683,95 @@ async (string s) => { try {} catch (System.Exception e) {} };
                 // (15,20): error CS1002: ; expected
                 //                 c1.
                 Diagnostic(ErrorCode.ERR_SemicolonExpected, "").WithLocation(15, 20));
+        }
+
+        [Fact, WorkItem("https://github.com/dotnet/roslyn/issues/51191")]
+        public void InterlockedExchange_WithNullCheckAndNullArgument()
+        {
+            var source = """
+                #nullable enable
+
+                using System.Threading;
+
+                public class C {
+                    private C? _obj;
+                    
+                    public void Rent()
+                    {
+                        if (_obj is not null)
+                        {
+                            C? o = Interlocked.Exchange(ref _obj, null);
+                            if (o is not null)
+                            {
+                                Use(o);
+                            }
+                        }
+                    }
+                    
+                    private void Use(C o) {}
+                }
+                """;
+            CreateCompilation(source).VerifyDiagnostics();
+        }
+
+        [Fact, WorkItem("https://github.com/dotnet/roslyn/issues/51191")]
+        public void InterlockedCompareExchange_WithNullCheckAndNullArgument()
+        {
+            var source = """
+                #nullable enable
+
+                using System.Threading;
+
+                public class C {
+                    private C? _obj;
+                    
+                    public void Rent()
+                    {
+                        C? current = _obj;
+                        if (current is not null)
+                        {
+                            C? o = Interlocked.CompareExchange(ref _obj, null, current);
+                            if (o is not null)
+                            {
+                                Use(o);
+                            }
+                        }
+                    }
+                    
+                    private void Use(C o) {}
+                }
+                """;
+            CreateCompilation(source).VerifyDiagnostics();
+        }
+
+        [Fact, WorkItem("https://github.com/dotnet/roslyn/issues/51191")]
+        public void InterlockedExchange_WithExplicitTypeArgument()
+        {
+            var source = """
+                #nullable enable
+
+                using System.Threading;
+
+                public class C {
+                    private C? _obj;
+                    
+                    public void Rent()
+                    {
+                        if (_obj is not null)
+                        {
+                            // Explicitly specifying the type argument should also work
+                            C? o = Interlocked.Exchange<C?>(ref _obj, null);
+                            if (o is not null)
+                            {
+                                Use(o);
+                            }
+                        }
+                    }
+                    
+                    private void Use(C o) {}
+                }
+                """;
+            CreateCompilation(source).VerifyDiagnostics();
         }
     }
 }
